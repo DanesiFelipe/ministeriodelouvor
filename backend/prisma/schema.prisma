@@ -1,0 +1,180 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+// Enums removed for SQLite compatibility. Use String instead.
+
+model User {
+  id            String    @id @default(uuid())
+  name          String
+  email         String    @unique
+  username      String    @unique
+  phone         String?
+  passwordHash  String
+  role          String    @default("MEMBER")
+  active        Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  memberRoles   MemberRole[]
+  memberBands   MemberBand[]
+  unavailabilities Unavailability[]
+  scheduleParticipants ScheduleParticipant[]
+  repertoires   Repertoire[]
+  notices       Notice[]
+}
+
+model Role {
+  id          String   @id @default(uuid())
+  name        String   // Ex: Ministro, Violão, Backing Vocal
+  description String?
+  createdAt   DateTime @default(now())
+
+  memberRoles MemberRole[]
+  scheduleParticipants ScheduleParticipant[]
+}
+
+model MemberRole {
+  id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  role      Role     @relation(fields: [roleId], references: [id])
+  roleId    String
+  createdAt DateTime @default(now())
+
+  @@unique([userId, roleId])
+}
+
+model Band {
+  id          String   @id @default(uuid())
+  name        String   // Ex: Banda 1, Banda 2
+  description String?
+  createdAt   DateTime @default(now())
+
+  memberBands MemberBand[]
+  schedules   Schedule[]
+}
+
+model MemberBand {
+  id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  band      Band     @relation(fields: [bandId], references: [id])
+  bandId    String
+  createdAt DateTime @default(now())
+
+  @@unique([userId, bandId])
+}
+
+model Service {
+  id        String      @id @default(uuid())
+  type      String
+  date      DateTime
+  time      String?
+  status    String      @default("SCHEDULED")
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  schedules  Schedule[]
+  repertoires Repertoire[]
+}
+
+model Unavailability {
+  id        String             @id @default(uuid())
+  user      User               @relation(fields: [userId], references: [id])
+  userId    String
+  date      DateTime
+  reason    String?
+  type      String
+  createdAt DateTime           @default(now())
+}
+
+model Schedule {
+  id          String         @id @default(uuid())
+  service     Service        @relation(fields: [serviceId], references: [id])
+  serviceId   String
+  band        Band?          @relation(fields: [bandId], references: [id])
+  bandId      String?
+  status      String         @default("DRAFT")
+  notes       String?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  participants ScheduleParticipant[]
+}
+
+model ScheduleParticipant {
+  id         String   @id @default(uuid())
+  schedule   Schedule @relation(fields: [scheduleId], references: [id])
+  scheduleId String
+  user       User     @relation(fields: [userId], references: [id])
+  userId     String
+  role       Role     @relation(fields: [roleId], references: [id])
+  roleId     String
+  createdAt  DateTime @default(now())
+
+  @@unique([scheduleId, userId, roleId])
+}
+
+model Song {
+  id          String   @id @default(uuid())
+  title       String
+  artist      String?
+  key         String?  // Tom
+  tonality    String?
+  links       String?
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  repertoireSongs RepertoireSong[]
+}
+
+model Repertoire {
+  id          String   @id @default(uuid())
+  service     Service  @relation(fields: [serviceId], references: [id])
+  serviceId   String
+  minister    User     @relation(fields: [ministerId], references: [id])
+  ministerId  String
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  songs RepertoireSong[]
+}
+
+model RepertoireSong {
+  id           String     @id @default(uuid())
+  repertoire   Repertoire @relation(fields: [repertoireId], references: [id])
+  repertoireId String
+  song         Song       @relation(fields: [songId], references: [id])
+  songId       String
+  order        Int
+  key          String?
+  createdAt    DateTime   @default(now())
+
+  @@unique([repertoireId, songId])
+}
+
+model IntegrationEvent {
+  id        String   @id @default(uuid())
+  type      String   // HOLYRICS_SYNC, WHATSAPP_SEND
+  status    String   // SUCCESS, FAILED
+  message   String?
+  createdAt DateTime @default(now())
+}
+
+model Notice {
+  id        String   @id @default(uuid())
+  title     String
+  content   String
+  createdBy User     @relation(fields: [creatorId], references: [id])
+  creatorId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

@@ -1,0 +1,330 @@
+import { useEffect, useState } from 'react';
+import { Trash2, Edit2, Plus, Users, ShieldCheck, ShieldOff, UserCheck, UserX } from 'lucide-react';
+
+interface Member {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string | null;
+  role: string;
+  active: boolean;
+}
+
+const inputStyle = {
+  padding: '0.8rem 1rem',
+  borderRadius: '8px',
+  background: 'rgba(255,255,255,0.07)',
+  color: 'white',
+  border: '1px solid rgba(255,255,255,0.15)',
+  fontFamily: 'var(--font-body)',
+  fontSize: '0.9rem',
+  outline: 'none',
+  width: '100%',
+};
+
+export default function Members() {
+  const [members, setMembers] = useState<Member[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [showModal, setShowModal] = useState(false);
+  const [roles, setRoles] = useState<any[]>([]);
+  const [bands, setBands] = useState<any[]>([]);
+
+  const [name, setName] = useState('');
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [password, setPassword] = useState('');
+  const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
+  const [selectedBand, setSelectedBand] = useState('');
+
+  const fetchMembers = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('http://localhost:3000/api/users', { headers: { Authorization: `Bearer ${token}` } });
+      if (!res.ok) throw new Error('Falha ao carregar membros');
+      setMembers(await res.json());
+    } catch (err: any) { setError(err.message); }
+    finally { setLoading(false); }
+  };
+
+  const fetchAuxData = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const headers = { Authorization: `Bearer ${token}` };
+      const [rRes, bRes] = await Promise.all([
+        fetch('http://localhost:3000/api/roles', { headers }),
+        fetch('http://localhost:3000/api/bands', { headers })
+      ]);
+      setRoles(await rRes.json());
+      setBands(await bRes.json());
+    } catch (e) {}
+  };
+
+  useEffect(() => { fetchMembers(); fetchAuxData(); }, []);
+
+  const handleCreateMember = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('http://localhost:3000/api/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ name, username, email, phone, password, roleIds: selectedRoles, bandId: selectedBand || null })
+      });
+      if (!res.ok) { const d = await res.json(); alert(d.error || 'Erro ao criar'); return; }
+      setShowModal(false);
+      setName(''); setUsername(''); setEmail(''); setPhone(''); setPassword(''); setSelectedRoles([]); setSelectedBand('');
+      fetchMembers();
+    } catch { alert('Erro ao criar membro'); }
+  };
+
+  const deactivateMember = async (id: string) => {
+    if (!window.confirm('Deseja desativar este membro?')) return;
+    try {
+      const token = localStorage.getItem('token');
+      await fetch(`http://localhost:3000/api/users/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+      fetchMembers();
+    } catch { alert('Erro ao desativar membro'); }
+  };
+
+  const approveMember = async (id: string) => {
+    try {
+      const token = localStorage.getItem('token');
+      await fetch(`http://localhost:3000/api/users/${id}/approve`, { method: 'PUT', headers: { Authorization: `Bearer ${token}` } });
+      fetchMembers();
+    } catch { alert('Erro ao aprovar membro'); }
+  };
+
+  const toggleAdminRole = async (id: string, currentRole: string) => {
+    const newRole = currentRole === 'ADMIN' ? 'MEMBER' : 'ADMIN';
+    const msg = currentRole === 'ADMIN'
+      ? 'Remover os privilégios de administrador deste membro?'
+      : 'Promover este membro a administrador? Ele terá acesso total ao sistema.';
+    if (!window.confirm(msg)) return;
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`http://localhost:3000/api/users/${id}/role`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ role: newRole })
+      });
+      if (!res.ok) throw new Error();
+      fetchMembers();
+    } catch { alert('Erro ao alterar privilégios'); }
+  };
+
+  const activeMembers = members.filter(m => m.active);
+  const pendingMembers = members.filter(m => !m.active);
+
+  return (
+    <>
+      <div className="page-header">
+        <div>
+          <h1 className="page-title">Membros</h1>
+          <p className="page-subtitle">{activeMembers.length} ativos · {pendingMembers.length} pendentes de aprovação</p>
+        </div>
+        <button onClick={() => setShowModal(true)} className="btn btn-primary">
+          <Plus size={18} /> Novo Membro
+        </button>
+      </div>
+
+      {/* Modal Novo Membro */}
+      {showModal && (
+        <div className="modal-overlay" onClick={() => setShowModal(false)}>
+          <div className="modal-box" onClick={e => e.stopPropagation()} style={{ maxWidth: '520px' }}>
+            <h2 style={{ marginBottom: '0.3rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Users size={22} color="var(--color-light)" /> Cadastrar Membro
+            </h2>
+            <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.82rem', marginBottom: '1.5rem', fontFamily: 'var(--font-body)' }}>
+              O membro receberá acesso ao sistema com as permissões configuradas.
+            </p>
+            <form onSubmit={handleCreateMember} style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.9rem' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)' }}>Nome Completo *</label>
+                  <input placeholder="João da Silva" required value={name} onChange={e => setName(e.target.value)} style={inputStyle} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)' }}>Usuário (login) *</label>
+                  <input placeholder="joao" required value={username} onChange={e => setUsername(e.target.value)} style={inputStyle} />
+                </div>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.9rem' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)' }}>Telefone (WhatsApp)</label>
+                  <input placeholder="(11) 99999-9999" value={phone} onChange={e => setPhone(e.target.value)} style={inputStyle} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)' }}>E-mail</label>
+                  <input placeholder="joao@email.com" type="email" value={email} onChange={e => setEmail(e.target.value)} style={inputStyle} />
+                </div>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.9rem' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)' }}>Senha Provisória *</label>
+                  <input placeholder="••••••" required type="password" value={password} onChange={e => setPassword(e.target.value)} style={inputStyle} />
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.6rem', fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)' }}>Funções Musicais</label>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                  {roles.map(r => (
+                    <label key={r.id} style={{
+                      display: 'flex', alignItems: 'center', gap: '0.4rem',
+                      background: selectedRoles.includes(r.id) ? 'rgba(86,155,103,0.2)' : 'rgba(255,255,255,0.05)',
+                      border: selectedRoles.includes(r.id) ? '1px solid rgba(86,155,103,0.4)' : '1px solid rgba(255,255,255,0.1)',
+                      padding: '0.4rem 0.8rem', borderRadius: '20px', cursor: 'pointer', fontSize: '0.82rem',
+                      transition: 'all 0.15s', userSelect: 'none',
+                    }}>
+                      <input type="checkbox" checked={selectedRoles.includes(r.id)} style={{ display: 'none' }}
+                        onChange={e => {
+                          if (e.target.checked) setSelectedRoles([...selectedRoles, r.id]);
+                          else setSelectedRoles(selectedRoles.filter(id => id !== r.id));
+                        }} />
+                      {r.name}
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)' }}>Banda Fixa (Opcional)</label>
+                <select value={selectedBand} onChange={e => setSelectedBand(e.target.value)} style={inputStyle}>
+                  <option value="" style={{ background: '#06392D' }}>Nenhuma (Avulso / Ministro)</option>
+                  {bands.map(b => <option key={b.id} value={b.id} style={{ background: '#06392D' }}>{b.name}</option>)}
+                </select>
+              </div>
+
+              <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem' }}>
+                <button type="button" onClick={() => setShowModal(false)} className="btn btn-ghost" style={{ flex: 1 }}>Cancelar</button>
+                <button type="submit" className="btn btn-primary" style={{ flex: 1, justifyContent: 'center' }}>Salvar Membro</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {error && <div style={{ background: 'rgba(224,92,92,0.1)', border: '1px solid rgba(224,92,92,0.3)', padding: '0.8rem 1.2rem', borderRadius: '8px', color: '#e05c5c', marginBottom: '1rem', fontSize: '0.9rem' }}>{error}</div>}
+
+      {loading ? (
+        <div className="loading-spinner"><Users size={20} /> Carregando membros...</div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          {/* Pending Approval */}
+          {pendingMembers.length > 0 && (
+            <section>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.75rem' }}>
+                <span className="badge badge-orange"><UserCheck size={11} /> {pendingMembers.length} aguardando aprovação</span>
+              </div>
+              <div className="glass-panel" style={{ padding: 0, overflow: 'hidden' }}>
+                <div className="table-container">
+                  <table className="data-table">
+                    <thead>
+                      <tr>
+                        <th>Nome</th><th>Usuário</th><th style={{ textAlign: 'right' }}>Ações</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {pendingMembers.map(m => (
+                        <tr key={m.id}>
+                          <td style={{ fontWeight: '500' }}>{m.name}</td>
+                          <td style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.85rem' }}>{m.email}</td>
+                          <td style={{ textAlign: 'right' }}>
+                            <button onClick={() => approveMember(m.id)} className="btn btn-primary" style={{ padding: '0.4rem 0.9rem', fontSize: '0.8rem' }}>
+                              <UserCheck size={14} /> Aprovar
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </section>
+          )}
+
+          {/* Active Members */}
+          <section>
+            <p style={{ fontSize: '0.72rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.3)', marginBottom: '0.75rem' }}>
+              Membros Ativos ({activeMembers.length})
+            </p>
+            <div className="glass-panel" style={{ padding: 0, overflow: 'hidden' }}>
+              <div className="table-container">
+                <table className="data-table">
+                  <thead>
+                  <tr>
+                    <th>Membro</th>
+                    <th>E-mail</th>
+                    <th>Perfil</th>
+                    <th style={{ textAlign: 'right' }}>Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {activeMembers.map(m => (
+                    <tr key={m.id}>
+                      <td>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                          <div style={{
+                            width: '32px', height: '32px',
+                            background: m.role === 'ADMIN' ? 'rgba(255,180,80,0.15)' : 'rgba(86,155,103,0.15)',
+                            borderRadius: '50%',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            fontSize: '0.8rem', fontWeight: '600', flexShrink: 0,
+                            color: m.role === 'ADMIN' ? '#ffb450' : '#a7cfa8'
+                          }}>
+                            {m.name.charAt(0).toUpperCase()}
+                          </div>
+                          <span style={{ fontWeight: '500', fontSize: '0.92rem' }}>{m.name}</span>
+                        </div>
+                      </td>
+                      <td style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.85rem' }}>{m.email}</td>
+                      <td>
+                        <span className={`badge ${m.role === 'ADMIN' ? 'badge-orange' : 'badge-gray'}`}>
+                          {m.role === 'ADMIN' ? <ShieldCheck size={11} /> : null}
+                          {m.role === 'ADMIN' ? 'Admin' : 'Membro'}
+                        </span>
+                      </td>
+                      <td style={{ textAlign: 'right' }}>
+                        <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'flex-end', alignItems: 'center' }}>
+                          <button
+                            onClick={() => toggleAdminRole(m.id, m.role)}
+                            title={m.role === 'ADMIN' ? 'Remover Admin' : 'Tornar Admin'}
+                            style={{
+                              background: m.role === 'ADMIN' ? 'rgba(255,180,80,0.12)' : 'rgba(100,180,255,0.1)',
+                              border: m.role === 'ADMIN' ? '1px solid rgba(255,180,80,0.25)' : '1px solid rgba(100,180,255,0.2)',
+                              color: m.role === 'ADMIN' ? '#ffb450' : 'var(--color-info)',
+                              cursor: 'pointer', padding: '0.35rem 0.7rem', borderRadius: '6px',
+                              fontSize: '0.78rem', fontFamily: 'var(--font-body)', transition: 'all 0.15s',
+                              display: 'flex', alignItems: 'center', gap: '0.3rem'
+                            }}
+                          >
+                            {m.role === 'ADMIN' ? <><ShieldOff size={13} /> Remover Admin</> : <><ShieldCheck size={13} /> Tornar Admin</>}
+                          </button>
+                          <button
+                            onClick={() => deactivateMember(m.id)}
+                            title="Desativar membro"
+                            style={{ background: 'rgba(224,92,92,0.1)', border: '1px solid rgba(224,92,92,0.2)', color: 'rgba(224,92,92,0.7)', cursor: 'pointer', padding: '0.35rem', borderRadius: '6px', transition: 'all 0.15s' }}
+                            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(224,92,92,0.2)'; (e.currentTarget as HTMLElement).style.color = '#e05c5c'; }}
+                            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(224,92,92,0.1)'; (e.currentTarget as HTMLElement).style.color = 'rgba(224,92,92,0.7)'; }}
+                          >
+                            <UserX size={15} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                  {activeMembers.length === 0 && (
+                    <tr><td colSpan={4}><div className="empty-state" style={{ padding: '2rem' }}><Users size={32} /><p>Nenhum membro ativo.</p></div></td></tr>
+                  )}
+                </tbody>
+              </table>
+              </div>
+            </div>
+          </section>
+        </div>
+      )}
+    </>
+  );
+}
