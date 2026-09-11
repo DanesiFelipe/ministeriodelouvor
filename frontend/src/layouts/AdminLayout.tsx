@@ -1,4 +1,4 @@
-import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { Outlet, useNavigate, useLocation, NavLink } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { LogOut, Users, Music, Calendar, Bell, Guitar, LayoutDashboard, Shield, Smartphone } from 'lucide-react';
 
@@ -21,6 +21,8 @@ export default function AdminLayout() {
   };
 
   if (!user) return null;
+
+  const isAdmin = user.role === 'ADMIN';
 
   const isActive = (path: string) => location.pathname === path || location.pathname.startsWith(path + '/');
   const isExact = (path: string) => location.pathname === path;

@@ -21,7 +21,7 @@ export default function ServiceDetail() {
 
   // States for Repertoire
   const [songs, setSongs] = useState<any[]>([]);
-  const [repertoire, setRepertoire] = useState<any>(null);
+  const [, setRepertoire] = useState<any>(null);
   const [repertoireSongs, setRepertoireSongs] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -151,8 +151,8 @@ export default function ServiceDetail() {
     try {
       const token = localStorage.getItem('token');
       const user = JSON.parse(localStorage.getItem('user') || '{}');
-      const songIds = repertoireSongs.map(s => s.id);
-      const res = await fetch(`${API_URL}/api/repertoires/service/${id}`, {
+      // const songIds = repertoireSongs.map(s => s.id);
+      await fetch(`${API_URL}/api/repertoires/service/${id}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({

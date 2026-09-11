@@ -1,6 +1,6 @@
 import { API_URL } from '../config';
 import { useEffect, useState } from 'react';
-import { Calendar, Plus, Users, Music, ChevronRight, CheckCircle2, Clock, AlertCircle, Sparkles } from 'lucide-react';
+import { Calendar, Plus, Music, ChevronRight, CheckCircle2, Clock, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface Service {

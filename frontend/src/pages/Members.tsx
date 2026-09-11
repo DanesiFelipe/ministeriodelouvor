@@ -1,6 +1,6 @@
 import { API_URL } from '../config';
 import { useEffect, useState } from 'react';
-import { Trash2, Edit2, Plus, Users, ShieldCheck, ShieldOff, UserCheck, UserX } from 'lucide-react';
+import { Plus, Users, ShieldCheck, ShieldOff, UserCheck, UserX } from 'lucide-react';
 
 interface Member {
   id: string;
