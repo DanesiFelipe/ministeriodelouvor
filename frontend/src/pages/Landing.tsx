@@ -1,3 +1,4 @@
+import { API_URL } from '../config';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -6,7 +7,7 @@ function App() {
   const [apiStatus, setApiStatus] = useState<string>('Verificando...');
 
   useEffect(() => {
-    fetch('http://localhost:3000/health')
+    fetch(`${API_URL}/health`)
       .then(res => res.json())
       .then(data => setApiStatus(data.message))
       .catch(() => setApiStatus('API offline ou não iniciada.'));

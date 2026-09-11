@@ -1,3 +1,4 @@
+import { API_URL } from '../config';
 import { useEffect, useState } from 'react';
 import { Trash2, Plus, Guitar, Users, UserPlus } from 'lucide-react';
 
@@ -35,7 +36,7 @@ export default function Bands() {
   const fetchBands = async () => {
     try {
       const token = localStorage.getItem('token');
-      setBands(await (await fetch('http://localhost:3000/api/bands', { headers: { Authorization: `Bearer ${token}` } })).json());
+      setBands(await (await fetch(`${API_URL}/api/bands`, { headers: { Authorization: `Bearer ${token}` } })).json());
     } catch (err) { console.error(err); }
     finally { setLoading(false); }
   };
@@ -43,7 +44,7 @@ export default function Bands() {
   const fetchAllUsers = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:3000/api/users', { headers: { Authorization: `Bearer ${token}` } });
+      const res = await fetch(`${API_URL}/api/users`, { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
       setAllUsers(data.filter((u: any) => u.active)); // Apenas ativos
     } catch (err) { console.error(err); }
@@ -52,7 +53,7 @@ export default function Bands() {
   const fetchBandMembers = async (bandId: string) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:3000/api/bands/${bandId}/members`, { headers: { Authorization: `Bearer ${token}` } });
+      const res = await fetch(`${API_URL}/api/bands/${bandId}/members`, { headers: { Authorization: `Bearer ${token}` } });
       setBandMembers(await res.json());
     } catch (err) { console.error(err); }
   };
@@ -61,7 +62,7 @@ export default function Bands() {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token');
-      await fetch('http://localhost:3000/api/bands', {
+      await fetch(`${API_URL}/api/bands`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ name, description })
@@ -75,7 +76,7 @@ export default function Bands() {
     if (!window.confirm('Excluir esta banda?')) return;
     try {
       const token = localStorage.getItem('token');
-      await fetch(`http://localhost:3000/api/bands/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+      await fetch(`${API_URL}/api/bands/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
       fetchBands();
     } catch { alert('Erro ao excluir'); }
   };
@@ -91,7 +92,7 @@ export default function Bands() {
     if (!selectedBand || !selectedUserToAdd) return;
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:3000/api/bands/${selectedBand.id}/members`, {
+      const res = await fetch(`${API_URL}/api/bands/${selectedBand.id}/members`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ userId: selectedUserToAdd })
@@ -107,7 +108,7 @@ export default function Bands() {
     if (!window.confirm('Remover membro desta banda?')) return;
     try {
       const token = localStorage.getItem('token');
-      await fetch(`http://localhost:3000/api/bands/${selectedBand.id}/members/${userId}`, { 
+      await fetch(`${API_URL}/api/bands/${selectedBand.id}/members/${userId}`, { 
         method: 'DELETE', 
         headers: { Authorization: `Bearer ${token}` } 
       });

@@ -1,3 +1,4 @@
+import { API_URL } from '../config';
 import { useEffect, useState } from 'react';
 import { Trash2, Edit2, Plus, Music, ExternalLink, Search } from 'lucide-react';
 
@@ -39,7 +40,7 @@ export default function Songs() {
   const fetchSongs = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:3000/api/songs', { headers: { Authorization: `Bearer ${token}` } });
+      const res = await fetch(`${API_URL}/api/songs`, { headers: { Authorization: `Bearer ${token}` } });
       if (!res.ok) throw new Error();
       setSongs(await res.json());
     } catch { alert('Erro ao carregar músicas'); }
@@ -52,7 +53,7 @@ export default function Songs() {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token');
-      const url = editingId ? `http://localhost:3000/api/songs/${editingId}` : 'http://localhost:3000/api/songs';
+      const url = editingId ? `${API_URL}/api/songs/${editingId}` : `${API_URL}/api/songs`;
       const res = await fetch(url, {
         method: editingId ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -74,7 +75,7 @@ export default function Songs() {
     if (!window.confirm('Excluir esta música da biblioteca?')) return;
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:3000/api/songs/${id}`, {
+      const res = await fetch(`${API_URL}/api/songs/${id}`, {
         method: 'DELETE', headers: { Authorization: `Bearer ${token}` }
       });
       if (!res.ok) throw new Error();

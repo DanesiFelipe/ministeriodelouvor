@@ -1,3 +1,4 @@
+import { API_URL } from '../config';
 import { useEffect, useState } from 'react';
 import { Trash2, Edit2, Plus, Users, ShieldCheck, ShieldOff, UserCheck, UserX } from 'lucide-react';
 
@@ -41,7 +42,7 @@ export default function Members() {
   const fetchMembers = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:3000/api/users', { headers: { Authorization: `Bearer ${token}` } });
+      const res = await fetch(`${API_URL}/api/users`, { headers: { Authorization: `Bearer ${token}` } });
       if (!res.ok) throw new Error('Falha ao carregar membros');
       setMembers(await res.json());
     } catch (err: any) { setError(err.message); }
@@ -53,8 +54,8 @@ export default function Members() {
       const token = localStorage.getItem('token');
       const headers = { Authorization: `Bearer ${token}` };
       const [rRes, bRes] = await Promise.all([
-        fetch('http://localhost:3000/api/roles', { headers }),
-        fetch('http://localhost:3000/api/bands', { headers })
+        fetch(`${API_URL}/api/roles`, { headers }),
+        fetch(`${API_URL}/api/bands`, { headers })
       ]);
       setRoles(await rRes.json());
       setBands(await bRes.json());
@@ -67,7 +68,7 @@ export default function Members() {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:3000/api/users', {
+      const res = await fetch(`${API_URL}/api/users`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ name, username, email, phone, password, roleIds: selectedRoles, bandId: selectedBand || null })
@@ -83,7 +84,7 @@ export default function Members() {
     if (!window.confirm('Deseja desativar este membro?')) return;
     try {
       const token = localStorage.getItem('token');
-      await fetch(`http://localhost:3000/api/users/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+      await fetch(`${API_URL}/api/users/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
       fetchMembers();
     } catch { alert('Erro ao desativar membro'); }
   };
@@ -91,7 +92,7 @@ export default function Members() {
   const approveMember = async (id: string) => {
     try {
       const token = localStorage.getItem('token');
-      await fetch(`http://localhost:3000/api/users/${id}/approve`, { method: 'PUT', headers: { Authorization: `Bearer ${token}` } });
+      await fetch(`${API_URL}/api/users/${id}/approve`, { method: 'PUT', headers: { Authorization: `Bearer ${token}` } });
       fetchMembers();
     } catch { alert('Erro ao aprovar membro'); }
   };
@@ -104,7 +105,7 @@ export default function Members() {
     if (!window.confirm(msg)) return;
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:3000/api/users/${id}/role`, {
+      const res = await fetch(`${API_URL}/api/users/${id}/role`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ role: newRole })

@@ -1,3 +1,4 @@
+import { API_URL } from '../config';
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Plus, Trash2 } from 'lucide-react';
@@ -48,12 +49,12 @@ export default function ServiceDetail() {
       const headers = { Authorization: `Bearer ${token}` };
 
       const [servRes, bandsRes, rolesRes, membersRes, songsRes, repRes] = await Promise.all([
-        fetch('http://localhost:3000/api/services', { headers }),
-        fetch('http://localhost:3000/api/bands', { headers }),
-        fetch('http://localhost:3000/api/roles', { headers }),
-        fetch('http://localhost:3000/api/users', { headers }),
-        fetch('http://localhost:3000/api/songs', { headers }),
-        fetch(`http://localhost:3000/api/repertoires/service/${id}`, { headers })
+        fetch(`${API_URL}/api/services`, { headers }),
+        fetch(`${API_URL}/api/bands`, { headers }),
+        fetch(`${API_URL}/api/roles`, { headers }),
+        fetch(`${API_URL}/api/users`, { headers }),
+        fetch(`${API_URL}/api/songs`, { headers }),
+        fetch(`${API_URL}/api/repertoires/service/${id}`, { headers })
       ]);
 
       const servicesData = await servRes.json();
@@ -82,7 +83,7 @@ export default function ServiceDetail() {
   const createSchedule = async () => {
     try {
       const token = localStorage.getItem('token');
-      await fetch('http://localhost:3000/api/schedules', {
+      await fetch(`${API_URL}/api/schedules`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ serviceId: id, bandId: selectedBand || null })
@@ -97,7 +98,7 @@ export default function ServiceDetail() {
     if (!window.confirm('Isto irá alocar os membros disponíveis automaticamente. Deseja continuar?')) return;
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:3000/api/schedules/${scheduleId}/auto-fill`, {
+      const res = await fetch(`${API_URL}/api/schedules/${scheduleId}/auto-fill`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -120,7 +121,7 @@ export default function ServiceDetail() {
     }
     try {
       const token = localStorage.getItem('token');
-      await fetch(`http://localhost:3000/api/schedules/${scheduleId}/participants`, {
+      await fetch(`${API_URL}/api/schedules/${scheduleId}/participants`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ userId: selectedMember, roleId: selectedRole })
@@ -135,7 +136,7 @@ export default function ServiceDetail() {
     if (!window.confirm('Remover membro da escala?')) return;
     try {
       const token = localStorage.getItem('token');
-      await fetch(`http://localhost:3000/api/schedules/${scheduleId}/participants/${participantId}`, {
+      await fetch(`${API_URL}/api/schedules/${scheduleId}/participants/${participantId}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -151,7 +152,7 @@ export default function ServiceDetail() {
       const token = localStorage.getItem('token');
       const user = JSON.parse(localStorage.getItem('user') || '{}');
       const songIds = repertoireSongs.map(s => s.id);
-      const res = await fetch(`http://localhost:3000/api/repertoires/service/${id}`, {
+      const res = await fetch(`${API_URL}/api/repertoires/service/${id}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({
@@ -197,7 +198,7 @@ export default function ServiceDetail() {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:3000/api/songs', {
+      const res = await fetch(`${API_URL}/api/songs`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ 

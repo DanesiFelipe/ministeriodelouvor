@@ -1,3 +1,4 @@
+import { API_URL } from '../config';
 import { useEffect, useState } from 'react';
 import { Smartphone, RefreshCw, CheckCircle2, XCircle, QrCode } from 'lucide-react';
 
@@ -24,7 +25,7 @@ export default function WhatsAppSettings() {
   const fetchStatus = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:3000/api/whatsapp/status', {
+      const res = await fetch(`${API_URL}/api/whatsapp/status`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
@@ -45,7 +46,7 @@ export default function WhatsAppSettings() {
   const fetchQrCode = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:3000/api/whatsapp/qr', {
+      const res = await fetch(`${API_URL}/api/whatsapp/qr`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
@@ -61,7 +62,7 @@ export default function WhatsAppSettings() {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      await fetch('http://localhost:3000/api/whatsapp/start', {
+      await fetch(`${API_URL}/api/whatsapp/start`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` }
       });

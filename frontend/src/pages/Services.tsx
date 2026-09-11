@@ -1,3 +1,4 @@
+import { API_URL } from '../config';
 import { useEffect, useState } from 'react';
 import { Calendar, Plus, Users, Music, ChevronRight, CheckCircle2, Clock, AlertCircle, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -48,7 +49,7 @@ export default function Services() {
   const fetchServices = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:3000/api/services', {
+      const res = await fetch(`${API_URL}/api/services`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
@@ -61,7 +62,7 @@ export default function Services() {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token');
-      await fetch('http://localhost:3000/api/services', {
+      await fetch(`${API_URL}/api/services`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ type: formType, date: formDate, time: formTime })
@@ -76,7 +77,7 @@ export default function Services() {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token');
-      await fetch('http://localhost:3000/api/services/generate-month', {
+      await fetch(`${API_URL}/api/services/generate-month`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ month: genMonth, year: genYear })

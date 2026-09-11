@@ -1,3 +1,4 @@
+import { API_URL } from '../config';
 import { useEffect, useState } from 'react';
 import { Trash2, Plus, Shield } from 'lucide-react';
 
@@ -30,7 +31,7 @@ export default function Roles() {
   const fetchRoles = async () => {
     try {
       const token = localStorage.getItem('token');
-      setRoles(await (await fetch('http://localhost:3000/api/roles', { headers: { Authorization: `Bearer ${token}` } })).json());
+      setRoles(await (await fetch(`${API_URL}/api/roles`, { headers: { Authorization: `Bearer ${token}` } })).json());
     } catch (err) { console.error(err); }
     finally { setLoading(false); }
   };
@@ -41,7 +42,7 @@ export default function Roles() {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token');
-      await fetch('http://localhost:3000/api/roles', {
+      await fetch(`${API_URL}/api/roles`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ name, description })
@@ -55,7 +56,7 @@ export default function Roles() {
     if (!window.confirm('Excluir esta função musical?')) return;
     try {
       const token = localStorage.getItem('token');
-      await fetch(`http://localhost:3000/api/roles/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+      await fetch(`${API_URL}/api/roles/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
       fetchRoles();
     } catch { alert('Erro ao excluir'); }
   };

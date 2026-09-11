@@ -1,3 +1,4 @@
+import { API_URL } from '../config';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -19,7 +20,7 @@ export default function Register() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch('http://localhost:3000/api/auth/register-data')
+    fetch(`${API_URL}/api/auth/register-data`)
       .then(r => r.json())
       .then(data => {
         setRoles(data.roles || []);
@@ -34,7 +35,7 @@ export default function Register() {
     setLoading(true);
 
     try {
-      const response = await fetch('http://localhost:3000/api/auth/register', {
+      const response = await fetch(`${API_URL}/api/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 

@@ -1,3 +1,4 @@
+import { API_URL } from '../config';
 import { useEffect, useState } from 'react';
 import { Trash2, Plus, Bell, Clock } from 'lucide-react';
 
@@ -31,7 +32,7 @@ export default function Notices() {
   const fetchNotices = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:3000/api/notices', { headers: { Authorization: `Bearer ${token}` } });
+      const res = await fetch(`${API_URL}/api/notices`, { headers: { Authorization: `Bearer ${token}` } });
       setNotices(await res.json());
     } catch (err) { console.error(err); }
     finally { setLoading(false); }
@@ -43,7 +44,7 @@ export default function Notices() {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:3000/api/notices', {
+      const res = await fetch(`${API_URL}/api/notices`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ title, content })
@@ -58,7 +59,7 @@ export default function Notices() {
     if (!window.confirm('Deseja excluir este aviso?')) return;
     try {
       const token = localStorage.getItem('token');
-      await fetch(`http://localhost:3000/api/notices/${id}`, {
+      await fetch(`${API_URL}/api/notices/${id}`, {
         method: 'DELETE', headers: { Authorization: `Bearer ${token}` }
       });
       fetchNotices();

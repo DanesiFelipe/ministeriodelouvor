@@ -1,3 +1,4 @@
+import { API_URL } from '../config';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Calendar, Music, Bell, ChevronRight, Users, CheckCircle2, Clock, AlertCircle } from 'lucide-react';
@@ -22,8 +23,8 @@ export default function Dashboard() {
     try {
       const token = localStorage.getItem('token');
       const [servicesRes, noticesRes] = await Promise.all([
-        fetch('http://localhost:3000/api/services', { headers: { Authorization: `Bearer ${token}` } }),
-        fetch('http://localhost:3000/api/notices', { headers: { Authorization: `Bearer ${token}` } })
+        fetch(`${API_URL}/api/services`, { headers: { Authorization: `Bearer ${token}` } }),
+        fetch(`${API_URL}/api/notices`, { headers: { Authorization: `Bearer ${token}` } })
       ]);
       const services = await servicesRes.json();
       const noticesData = await noticesRes.json();
