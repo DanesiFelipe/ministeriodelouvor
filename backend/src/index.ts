@@ -14,7 +14,7 @@ import whatsappRoutes from './routes/whatsapp';
 import { whatsappService } from './services/whatsapp';
 import { initializeCronJobs } from './services/cron';
 import { PrismaClient } from '@prisma/client';
-import bcrypt from 'bcryptjs';
+import bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 dotenv.config();
@@ -51,7 +51,8 @@ app.listen(port, () => {
         data: {
           name: 'Admin',
           username: 'admin',
-          password: hashedPassword,
+          email: 'admin@admin.com',
+          passwordHash: hashedPassword,
           role: 'ADMIN',
           active: true,
         }
