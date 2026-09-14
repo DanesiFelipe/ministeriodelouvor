@@ -18,6 +18,9 @@ router.get('/', requireAuth, async (req: AuthRequest, res: Response): Promise<vo
         role: true,
         active: true,
         createdAt: true,
+        memberRoles: {
+          include: { role: true }
+        }
       }
     });
     res.json(users);
@@ -139,6 +142,53 @@ router.put('/:id/role', requireAuth, requireAdmin, async (req: AuthRequest, res:
     res.json(user);
   } catch (error) {
     res.status(500).json({ error: 'Erro ao alterar função do usuário' });
+  }
+});
+
+// Alternar privilégio de Ministro de Louvor (Apenas Admin)
+router.put('/:id/ministro', requireAuth, requireAdmin, async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const userId = req.params.id as string;
+    const { isMinistro } = req.body; // boolean
+    
+    // Find or create "Ministro" role
+    let ministroRole = await prisma.role.findFirst({
+      where: {
+        OR: [
+          { name: { equals: 'Ministro', mode: 'insensitive' } },
+          { name: { equals: 'Ministra', mode: 'insensitive' } },
+          { name: { equals: 'Ministro de Louvor', mode: 'insensitive' } }
+        ]
+      }
+    });
+
+    if (!ministroRole) {
+      ministroRole = await prisma.role.create({
+        data: { name: 'Ministro de Louvor', description: 'Função de Ministro de Louvor' }
+      });
+    }
+
+    if (isMinistro) {
+      // Add role if not exists
+      const existing = await prisma.memberRole.findUnique({
+        where: { userId_roleId: { userId, roleId: ministroRole.id } }
+      });
+      if (!existing) {
+        await prisma.memberRole.create({
+          data: { userId, roleId: ministroRole.id }
+        });
+      }
+    } else {
+      // Remove role if exists
+      await prisma.memberRole.deleteMany({
+        where: { userId, roleId: ministroRole.id }
+      });
+    }
+    
+    res.json({ success: true });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Erro ao alterar privilégio de ministro' });
   }
 });
 

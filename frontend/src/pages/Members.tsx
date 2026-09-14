@@ -1,6 +1,6 @@
 import { API_URL } from '../config';
 import { useEffect, useState } from 'react';
-import { Plus, Users, ShieldCheck, ShieldOff, UserCheck, UserX } from 'lucide-react';
+import { Plus, Users, ShieldCheck, ShieldOff, UserCheck, UserX, Music } from 'lucide-react';
 
 interface Member {
   id: string;
@@ -9,6 +9,7 @@ interface Member {
   phone?: string | null;
   role: string;
   active: boolean;
+  memberRoles?: Array<{ role: { name: string } }>;
 }
 
 const inputStyle = {
@@ -127,8 +128,26 @@ export default function Members() {
         body: JSON.stringify({ role: newRole })
       });
       if (!res.ok) throw new Error();
+      if (!res.ok) throw new Error();
       fetchMembers();
     } catch { alert('Erro ao alterar privilégios'); }
+  };
+
+  const toggleMinistroRole = async (id: string, isCurrentlyMinistro: boolean) => {
+    const msg = isCurrentlyMinistro
+      ? 'Remover o acesso de Ministro de Louvor deste membro?'
+      : 'Conceder acesso de Ministro de Louvor a este membro? Ele poderá gerenciar músicas e repertórios.';
+    if (!window.confirm(msg)) return;
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_URL}/api/users/${id}/ministro`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ isMinistro: !isCurrentlyMinistro })
+      });
+      if (!res.ok) throw new Error();
+      fetchMembers();
+    } catch { alert('Erro ao alterar privilégio de ministro'); }
   };
 
   const activeMembers = members.filter(m => m.active);
@@ -318,34 +337,55 @@ export default function Members() {
                     </div>
 
                     {/* Actions */}
-                    <div style={{ display: 'flex', gap: '0.35rem', flexShrink: 0 }}>
-                      <button
-                        onClick={() => toggleAdminRole(m.id, m.role)}
-                        title={m.role === 'ADMIN' ? 'Remover Admin' : 'Tornar Admin'}
-                        style={{
-                          background: m.role === 'ADMIN' ? 'rgba(255,180,80,0.12)' : 'rgba(100,180,255,0.1)',
-                          border: m.role === 'ADMIN' ? '1px solid rgba(255,180,80,0.25)' : '1px solid rgba(100,180,255,0.2)',
-                          color: m.role === 'ADMIN' ? '#ffb450' : 'var(--color-info)',
-                          cursor: 'pointer', padding: '0.45rem', borderRadius: '8px',
-                          transition: 'all 0.15s', display: 'flex', alignItems: 'center',
-                        }}
-                      >
-                        {m.role === 'ADMIN' ? <ShieldOff size={15} /> : <ShieldCheck size={15} />}
-                      </button>
-                      <button
-                        onClick={() => deactivateMember(m.id)}
-                        title="Desativar membro"
-                        style={{
-                          background: 'rgba(224,92,92,0.1)', border: '1px solid rgba(224,92,92,0.2)',
-                          color: 'rgba(224,92,92,0.7)', cursor: 'pointer', padding: '0.45rem',
-                          borderRadius: '8px', transition: 'all 0.15s', display: 'flex', alignItems: 'center',
-                        }}
-                        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(224,92,92,0.2)'; (e.currentTarget as HTMLElement).style.color = '#e05c5c'; }}
-                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(224,92,92,0.1)'; (e.currentTarget as HTMLElement).style.color = 'rgba(224,92,92,0.7)'; }}
-                      >
-                        <UserX size={15} />
-                      </button>
-                    </div>
+                    {(() => {
+                      const isMinistro = m.memberRoles?.some(mr => 
+                        mr.role.name.toLowerCase().includes('ministr')
+                      ) ?? false;
+                      
+                      return (
+                        <div style={{ display: 'flex', gap: '0.35rem', flexShrink: 0 }}>
+                          <button
+                            onClick={() => toggleMinistroRole(m.id, isMinistro)}
+                            title={isMinistro ? 'Remover Ministro' : 'Tornar Ministro'}
+                            style={{
+                              background: isMinistro ? 'rgba(86,155,103,0.12)' : 'rgba(255,255,255,0.05)',
+                              border: isMinistro ? '1px solid rgba(86,155,103,0.25)' : '1px solid rgba(255,255,255,0.1)',
+                              color: isMinistro ? '#a7cfa8' : 'rgba(255,255,255,0.3)',
+                              cursor: 'pointer', padding: '0.45rem', borderRadius: '8px',
+                              transition: 'all 0.15s', display: 'flex', alignItems: 'center',
+                            }}
+                          >
+                            <Music size={15} />
+                          </button>
+                          <button
+                            onClick={() => toggleAdminRole(m.id, m.role)}
+                            title={m.role === 'ADMIN' ? 'Remover Admin' : 'Tornar Admin'}
+                            style={{
+                              background: m.role === 'ADMIN' ? 'rgba(255,180,80,0.12)' : 'rgba(100,180,255,0.1)',
+                              border: m.role === 'ADMIN' ? '1px solid rgba(255,180,80,0.25)' : '1px solid rgba(100,180,255,0.2)',
+                              color: m.role === 'ADMIN' ? '#ffb450' : 'var(--color-info)',
+                              cursor: 'pointer', padding: '0.45rem', borderRadius: '8px',
+                              transition: 'all 0.15s', display: 'flex', alignItems: 'center',
+                            }}
+                          >
+                            {m.role === 'ADMIN' ? <ShieldOff size={15} /> : <ShieldCheck size={15} />}
+                          </button>
+                          <button
+                            onClick={() => deactivateMember(m.id)}
+                            title="Desativar membro"
+                            style={{
+                              background: 'rgba(224,92,92,0.1)', border: '1px solid rgba(224,92,92,0.2)',
+                              color: 'rgba(224,92,92,0.7)', cursor: 'pointer', padding: '0.45rem',
+                              borderRadius: '8px', transition: 'all 0.15s', display: 'flex', alignItems: 'center',
+                            }}
+                            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(224,92,92,0.2)'; (e.currentTarget as HTMLElement).style.color = '#e05c5c'; }}
+                            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(224,92,92,0.1)'; (e.currentTarget as HTMLElement).style.color = 'rgba(224,92,92,0.7)'; }}
+                          >
+                            <UserX size={15} />
+                          </button>
+                        </div>
+                      );
+                    })()}
                   </div>
                 ))}
               </div>
