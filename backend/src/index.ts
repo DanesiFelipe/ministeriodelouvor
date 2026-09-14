@@ -13,7 +13,10 @@ import noticesRoutes from './routes/notices';
 import whatsappRoutes from './routes/whatsapp';
 import { whatsappService } from './services/whatsapp';
 import { initializeCronJobs } from './services/cron';
+import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcryptjs';
 
+const prisma = new PrismaClient();
 dotenv.config();
 
 const app = express();
@@ -40,6 +43,23 @@ app.use('/api/whatsapp', whatsappRoutes);
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
   
+  // Ensure default admin user exists
+  prisma.user.findUnique({ where: { username: 'admin' } }).then(async (admin) => {
+    if (!admin) {
+      const hashedPassword = await bcrypt.hash('123456', 10);
+      await prisma.user.create({
+        data: {
+          name: 'Admin',
+          username: 'admin',
+          password: hashedPassword,
+          role: 'ADMIN',
+          active: true,
+        }
+      });
+      console.log('Default admin user created');
+    }
+  });
+
   // Inicializar serviços de mensageria e agendamentos
   whatsappService.initialize();
   initializeCronJobs();
