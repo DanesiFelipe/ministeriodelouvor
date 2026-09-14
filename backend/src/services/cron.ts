@@ -50,6 +50,46 @@ export function initializeCronJobs() {
       console.error('[CRON] Erro na rotina de Quinta:', err);
     }
   });
+
+  // REGRA DE LIMPEZA DIÁRIA: Excluir cultos mais antigos que 2 meses (60 dias)
+  // Roda todos os dias às 03:00 da manhã -> '0 3 * * *'
+  cron.schedule('0 3 * * *', async () => {
+    console.log('[CRON] Executando rotina de Limpeza de Cultos Antigos...');
+    try {
+      const twoMonthsAgo = new Date();
+      twoMonthsAgo.setDate(twoMonthsAgo.getDate() - 60);
+
+      const oldServices = await prisma.service.findMany({
+        where: { date: { lt: twoMonthsAgo } }
+      });
+
+      if (oldServices.length === 0) {
+        console.log('[CRON] Nenhum culto antigo para excluir.');
+        return;
+      }
+
+      for (const service of oldServices) {
+        const id = service.id;
+        const schedules = await prisma.schedule.findMany({ where: { serviceId: id } });
+        for (const schedule of schedules) {
+          await prisma.scheduleParticipant.deleteMany({ where: { scheduleId: schedule.id } });
+        }
+        await prisma.schedule.deleteMany({ where: { serviceId: id } });
+
+        const repertoires = await prisma.repertoire.findMany({ where: { serviceId: id } });
+        for (const repertoire of repertoires) {
+          await prisma.repertoireSong.deleteMany({ where: { repertoireId: repertoire.id } });
+        }
+        await prisma.repertoire.deleteMany({ where: { serviceId: id } });
+
+        await prisma.service.delete({ where: { id } });
+      }
+
+      console.log(`[CRON] Limpeza de ${oldServices.length} cultos antigos concluída com sucesso.`);
+    } catch (err) {
+      console.error('[CRON] Erro na rotina de Limpeza:', err);
+    }
+  });
 }
 
 // Lógica principal de buscar culto, achar o ministro e mandar a mensagem

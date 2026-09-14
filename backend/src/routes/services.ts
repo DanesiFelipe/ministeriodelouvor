@@ -42,10 +42,13 @@ router.post('/', requireAuth, requireAdmin, async (req: AuthRequest, res: Respon
       return;
     }
 
+    const parsedDate = new Date(date);
+    const safeDate = new Date(Date.UTC(parsedDate.getUTCFullYear(), parsedDate.getUTCMonth(), parsedDate.getUTCDate(), 12, 0, 0));
+
     const service = await prisma.service.create({
       data: { 
         type, 
-        date: new Date(date), 
+        date: safeDate, 
         time 
       }
     });
@@ -80,8 +83,11 @@ router.post('/generate-month', requireAuth, requireAdmin, async (req: AuthReques
         const type = weekDay === 0 ? 'DOMINGO' : 'QUINTA';
         const time = weekDay === 0 ? '18:30' : '20:00';
 
+        // Fix timezone issue by setting time to 12:00 PM UTC
+        const safeDate = new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
+
         const service = await prisma.service.create({
-          data: { type, date: currentDate, time }
+          data: { type, date: safeDate, time }
         });
 
         let bandId = null;
