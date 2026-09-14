@@ -55,9 +55,13 @@ router.put('/:id', requireAuth, requireAdminOrMinistro, async (req: AuthRequest,
 router.delete('/:id', requireAuth, requireAdminOrMinistro, async (req: AuthRequest, res: Response) => {
   try {
     const songId = req.params.id as string;
+    // Primeiro remove das entradas de repertório (FK constraint)
+    await prisma.repertoireSong.deleteMany({ where: { songId } });
+    // Agora deleta a música em si
     await prisma.song.delete({ where: { id: songId } });
     res.json({ message: 'Música excluída com sucesso' });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: 'Erro ao excluir música' });
   }
 });
