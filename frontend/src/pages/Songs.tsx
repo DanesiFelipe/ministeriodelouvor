@@ -25,6 +25,16 @@ const inputStyle = {
 const KEYS = ['C', 'C#', 'Db', 'D', 'D#', 'Eb', 'E', 'F', 'F#', 'Gb', 'G', 'G#', 'Ab', 'A', 'A#', 'Bb', 'B',
   'Cm', 'C#m', 'Dm', 'D#m', 'Ebm', 'Em', 'Fm', 'F#m', 'Gm', 'G#m', 'Am', 'A#m', 'Bbm', 'Bm'];
 
+const KEY_COLORS: Record<string, string> = {
+  'C': '#e57373', 'D': '#f06292', 'E': '#ba68c8', 'F': '#7986cb',
+  'G': '#4dd0e1', 'A': '#4db6ac', 'B': '#81c784',
+};
+function getKeyColor(k: string | null) {
+  if (!k) return 'rgba(255,255,255,0.15)';
+  const base = k.replace(/[#bm]/g, '');
+  return KEY_COLORS[base] || '#a7cfa8';
+}
+
 export default function Songs() {
   const [songs, setSongs] = useState<Song[]>([]);
   const [loading, setLoading] = useState(true);
@@ -66,19 +76,24 @@ export default function Songs() {
     } catch { alert('Erro ao salvar música'); }
   };
 
-  const editSong = (s: Song) => {
-    setEditingId(s.id); setTitle(s.title); setArtist(s.artist || '');
-    setKey(s.key || ''); setLinks(s.links || ''); setShowModal(true);
+  const editSong = (song: Song) => {
+    setEditingId(song.id);
+    setTitle(song.title);
+    setArtist(song.artist || '');
+    setKey(song.key || '');
+    setLinks(song.links || '');
+    setShowModal(true);
   };
 
   const deleteSong = async (id: string) => {
-    if (!window.confirm('Excluir esta música da biblioteca?')) return;
+    if (!window.confirm('Deseja excluir esta música do acervo?')) return;
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/api/songs/${id}`, {
-        method: 'DELETE', headers: { Authorization: `Bearer ${token}` }
+      await fetch(`${API_URL}/api/songs/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
       });
-      if (!res.ok) throw new Error();
+      if (true) throw new Error();
       fetchSongs();
     } catch { alert('Erro ao excluir (você pode não ter permissão)'); }
   };
@@ -155,61 +170,81 @@ export default function Songs() {
       {loading ? (
         <div className="loading-spinner"><Music size={20} /> Carregando biblioteca...</div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '1rem' }}>
-          {filtered.map(song => (
-            <div key={song.id} style={{
-              background: 'rgba(255,255,255,0.04)',
-              border: '1px solid rgba(255,255,255,0.08)',
-              borderRadius: '14px',
-              padding: '1.3rem',
-              transition: 'all 0.2s',
-              position: 'relative',
-            }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.07)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.14)'; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.04)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.08)'; }}
-            >
-              {/* Actions */}
-              <div style={{ position: 'absolute', top: '1rem', right: '1rem', display: 'flex', gap: '0.3rem' }}>
-                <button onClick={() => editSong(song)} title="Editar" style={{ background: 'rgba(255,255,255,0.07)', border: 'none', color: 'rgba(255,255,255,0.5)', cursor: 'pointer', padding: '0.3rem', borderRadius: '6px', transition: 'all 0.15s' }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = 'white'; (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.15)'; }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.5)'; (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.07)'; }}>
-                  <Edit2 size={14} />
-                </button>
-                <button onClick={() => deleteSong(song.id)} title="Excluir" style={{ background: 'rgba(224,92,92,0.1)', border: 'none', color: 'rgba(224,92,92,0.6)', cursor: 'pointer', padding: '0.3rem', borderRadius: '6px', transition: 'all 0.15s' }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = '#e05c5c'; (e.currentTarget as HTMLElement).style.background = 'rgba(224,92,92,0.2)'; }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(224,92,92,0.6)'; (e.currentTarget as HTMLElement).style.background = 'rgba(224,92,92,0.1)'; }}>
-                  <Trash2 size={14} />
-                </button>
-              </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(270px, 1fr))', gap: '1rem' }}>
+          {filtered.map(song => {
+            const keyColor = getKeyColor(song.key);
+            return (
+              <div key={song.id} style={{
+                background: 'rgba(255,255,255,0.04)',
+                border: '1px solid rgba(255,255,255,0.08)',
+                borderTop: `3px solid ${keyColor}22`,
+                borderRadius: '16px',
+                padding: '1.25rem',
+                transition: 'all 0.2s ease',
+                position: 'relative',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.75rem',
+              }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.07)'; (e.currentTarget as HTMLElement).style.borderTopColor = `${keyColor}55`; (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.04)'; (e.currentTarget as HTMLElement).style.borderTopColor = `${keyColor}22`; (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'; }}
+              >
+                {/* Actions */}
+                <div style={{ position: 'absolute', top: '1rem', right: '1rem', display: 'flex', gap: '0.3rem' }}>
+                  <button onClick={() => editSong(song)} title="Editar"
+                    style={{ background: 'rgba(255,255,255,0.07)', border: 'none', color: 'rgba(255,255,255,0.5)', cursor: 'pointer', padding: '0.35rem', borderRadius: '6px', transition: 'all 0.15s', display: 'flex', alignItems: 'center' }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = 'white'; (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.15)'; }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.5)'; (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.07)'; }}>
+                    <Edit2 size={13} />
+                  </button>
+                  <button onClick={() => deleteSong(song.id)} title="Excluir"
+                    style={{ background: 'rgba(224,92,92,0.1)', border: 'none', color: 'rgba(224,92,92,0.6)', cursor: 'pointer', padding: '0.35rem', borderRadius: '6px', transition: 'all 0.15s', display: 'flex', alignItems: 'center' }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = '#e05c5c'; (e.currentTarget as HTMLElement).style.background = 'rgba(224,92,92,0.2)'; }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(224,92,92,0.6)'; (e.currentTarget as HTMLElement).style.background = 'rgba(224,92,92,0.1)'; }}>
+                    <Trash2 size={13} />
+                  </button>
+                </div>
 
-              {/* Music Icon */}
-              <div style={{ width: '40px', height: '40px', background: 'rgba(86,155,103,0.15)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '0.9rem' }}>
-                <Music size={20} color="var(--color-light)" />
-              </div>
+                {/* Icon */}
+                <div style={{
+                  width: '42px', height: '42px',
+                  background: `linear-gradient(135deg, ${keyColor}30, ${keyColor}10)`,
+                  border: `1px solid ${keyColor}35`,
+                  borderRadius: '11px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <Music size={20} color={keyColor} />
+                </div>
 
-              {/* Title */}
-              <h3 style={{ fontSize: '1rem', fontWeight: '600', fontFamily: 'var(--font-heading)', marginBottom: '0.2rem', paddingRight: '4rem', lineHeight: 1.2 }}>
-                {song.title}
-              </h3>
-              <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.82rem', fontFamily: 'var(--font-body)', marginBottom: '1rem' }}>
-                {song.artist || 'Artista desconhecido'}
-              </p>
+                {/* Title & Artist */}
+                <div>
+                  <h3 style={{ fontSize: '1rem', fontWeight: '600', fontFamily: 'var(--font-heading)', lineHeight: 1.25, paddingRight: '4.5rem', marginBottom: '0.25rem' }}>
+                    {song.title}
+                  </h3>
+                  <p style={{ color: 'rgba(255,255,255,0.38)', fontSize: '0.81rem', fontFamily: 'var(--font-body)' }}>
+                    {song.artist || 'Artista desconhecido'}
+                  </p>
+                </div>
 
-              {/* Footer */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '0.8rem' }}>
-                <span className="badge badge-gray" style={{ fontSize: '0.78rem' }}>
-                  🎵 Tom: {song.key || '?'}
-                </span>
-                {song.links && (
-                  <a href={song.links} target="_blank" rel="noreferrer"
-                    style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: 'var(--color-info)', fontSize: '0.78rem', fontFamily: 'var(--font-body)' }}
-                    onClick={e => e.stopPropagation()}>
-                    <ExternalLink size={12} /> YouTube
-                  </a>
-                )}
+                {/* Footer */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '0.75rem', marginTop: 'auto' }}>
+                  <span style={{
+                    background: `${keyColor}18`, border: `1px solid ${keyColor}30`,
+                    color: keyColor, borderRadius: '20px', padding: '0.2rem 0.65rem',
+                    fontSize: '0.75rem', fontWeight: '600', fontFamily: 'var(--font-body)',
+                  }}>
+                    Tom: {song.key || '?'}
+                  </span>
+                  {song.links && (
+                    <a href={song.links} target="_blank" rel="noreferrer"
+                      style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: 'var(--color-info)', fontSize: '0.78rem', fontFamily: 'var(--font-body)' }}
+                      onClick={e => e.stopPropagation()}>
+                      <ExternalLink size={12} /> YouTube
+                    </a>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
 
           {filtered.length === 0 && (
             <div className="empty-state" style={{ gridColumn: '1 / -1' }}>

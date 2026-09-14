@@ -23,6 +23,22 @@ const inputStyle = {
   width: '100%',
 };
 
+function getInitials(name: string) {
+  return name.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase();
+}
+
+function getAvatarGradient(name: string) {
+  const gradients = [
+    'linear-gradient(135deg, #569B67, #3a7a4a)',
+    'linear-gradient(135deg, #4a90d9, #2e6aad)',
+    'linear-gradient(135deg, #c97c3a, #a05a20)',
+    'linear-gradient(135deg, #9b56a0, #6d2f73)',
+    'linear-gradient(135deg, #3ab8c4, #1a8a96)',
+  ];
+  const idx = name.charCodeAt(0) % gradients.length;
+  return gradients[idx];
+}
+
 export default function Members() {
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
@@ -161,11 +177,9 @@ export default function Members() {
                   <input placeholder="joao@email.com" type="email" value={email} onChange={e => setEmail(e.target.value)} style={inputStyle} />
                 </div>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.9rem' }}>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)' }}>Senha Provisória *</label>
-                  <input placeholder="••••••" required type="password" value={password} onChange={e => setPassword(e.target.value)} style={inputStyle} />
-                </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)' }}>Senha Provisória *</label>
+                <input placeholder="••••••" required type="password" value={password} onChange={e => setPassword(e.target.value)} style={inputStyle} />
               </div>
 
               <div>
@@ -212,117 +226,130 @@ export default function Members() {
       {loading ? (
         <div className="loading-spinner"><Users size={20} /> Carregando membros...</div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          {/* Pending Approval */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+
+          {/* Pendentes de aprovação */}
           {pendingMembers.length > 0 && (
             <section>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.75rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1rem' }}>
                 <span className="badge badge-orange"><UserCheck size={11} /> {pendingMembers.length} aguardando aprovação</span>
               </div>
-              <div className="glass-panel" style={{ padding: 0, overflow: 'hidden' }}>
-                <div className="table-container">
-                  <table className="data-table">
-                    <thead>
-                      <tr>
-                        <th>Nome</th><th>Usuário</th><th style={{ textAlign: 'right' }}>Ações</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {pendingMembers.map(m => (
-                        <tr key={m.id}>
-                          <td style={{ fontWeight: '500' }}>{m.name}</td>
-                          <td style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.85rem' }}>{m.email}</td>
-                          <td style={{ textAlign: 'right' }}>
-                            <button onClick={() => approveMember(m.id)} className="btn btn-primary" style={{ padding: '0.4rem 0.9rem', fontSize: '0.8rem' }}>
-                              <UserCheck size={14} /> Aprovar
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '0.75rem' }}>
+                {pendingMembers.map(m => (
+                  <div key={m.id} style={{
+                    background: 'rgba(255,180,80,0.05)',
+                    border: '1px solid rgba(255,180,80,0.2)',
+                    borderRadius: '14px',
+                    padding: '1.25rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '1rem',
+                    animation: 'slideUp 0.3s ease',
+                  }}>
+                    <div style={{
+                      width: '44px', height: '44px', flexShrink: 0,
+                      background: 'rgba(255,180,80,0.15)',
+                      borderRadius: '50%',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: '1rem', fontWeight: '700', color: '#ffb450',
+                    }}>
+                      {getInitials(m.name)}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ fontWeight: '600', fontSize: '0.95rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{m.name}</p>
+                      <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.78rem' }}>{m.email}</p>
+                    </div>
+                    <button onClick={() => approveMember(m.id)} className="btn btn-primary" style={{ padding: '0.4rem 0.9rem', fontSize: '0.8rem', flexShrink: 0 }}>
+                      <UserCheck size={13} /> Aprovar
+                    </button>
+                  </div>
+                ))}
               </div>
             </section>
           )}
 
-          {/* Active Members */}
+          {/* Membros Ativos */}
           <section>
-            <p style={{ fontSize: '0.72rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.3)', marginBottom: '0.75rem' }}>
+            <p style={{ fontSize: '0.72rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.3)', marginBottom: '1rem' }}>
               Membros Ativos ({activeMembers.length})
             </p>
-            <div className="glass-panel" style={{ padding: 0, overflow: 'hidden' }}>
-              <div className="table-container">
-                <table className="data-table">
-                  <thead>
-                  <tr>
-                    <th>Membro</th>
-                    <th>E-mail</th>
-                    <th>Perfil</th>
-                    <th style={{ textAlign: 'right' }}>Ações</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {activeMembers.map(m => (
-                    <tr key={m.id}>
-                      <td>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                          <div style={{
-                            width: '32px', height: '32px',
-                            background: m.role === 'ADMIN' ? 'rgba(255,180,80,0.15)' : 'rgba(86,155,103,0.15)',
-                            borderRadius: '50%',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            fontSize: '0.8rem', fontWeight: '600', flexShrink: 0,
-                            color: m.role === 'ADMIN' ? '#ffb450' : '#a7cfa8'
-                          }}>
-                            {m.name.charAt(0).toUpperCase()}
-                          </div>
-                          <span style={{ fontWeight: '500', fontSize: '0.92rem' }}>{m.name}</span>
-                        </div>
-                      </td>
-                      <td style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.85rem' }}>{m.email}</td>
-                      <td>
-                        <span className={`badge ${m.role === 'ADMIN' ? 'badge-orange' : 'badge-gray'}`}>
-                          {m.role === 'ADMIN' ? <ShieldCheck size={11} /> : null}
-                          {m.role === 'ADMIN' ? 'Admin' : 'Membro'}
-                        </span>
-                      </td>
-                      <td style={{ textAlign: 'right' }}>
-                        <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'flex-end', alignItems: 'center' }}>
-                          <button
-                            onClick={() => toggleAdminRole(m.id, m.role)}
-                            title={m.role === 'ADMIN' ? 'Remover Admin' : 'Tornar Admin'}
-                            style={{
-                              background: m.role === 'ADMIN' ? 'rgba(255,180,80,0.12)' : 'rgba(100,180,255,0.1)',
-                              border: m.role === 'ADMIN' ? '1px solid rgba(255,180,80,0.25)' : '1px solid rgba(100,180,255,0.2)',
-                              color: m.role === 'ADMIN' ? '#ffb450' : 'var(--color-info)',
-                              cursor: 'pointer', padding: '0.35rem 0.7rem', borderRadius: '6px',
-                              fontSize: '0.78rem', fontFamily: 'var(--font-body)', transition: 'all 0.15s',
-                              display: 'flex', alignItems: 'center', gap: '0.3rem'
-                            }}
-                          >
-                            {m.role === 'ADMIN' ? <><ShieldOff size={13} /> Remover Admin</> : <><ShieldCheck size={13} /> Tornar Admin</>}
-                          </button>
-                          <button
-                            onClick={() => deactivateMember(m.id)}
-                            title="Desativar membro"
-                            style={{ background: 'rgba(224,92,92,0.1)', border: '1px solid rgba(224,92,92,0.2)', color: 'rgba(224,92,92,0.7)', cursor: 'pointer', padding: '0.35rem', borderRadius: '6px', transition: 'all 0.15s' }}
-                            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(224,92,92,0.2)'; (e.currentTarget as HTMLElement).style.color = '#e05c5c'; }}
-                            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(224,92,92,0.1)'; (e.currentTarget as HTMLElement).style.color = 'rgba(224,92,92,0.7)'; }}
-                          >
-                            <UserX size={15} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                  {activeMembers.length === 0 && (
-                    <tr><td colSpan={4}><div className="empty-state" style={{ padding: '2rem' }}><Users size={32} /><p>Nenhum membro ativo.</p></div></td></tr>
-                  )}
-                </tbody>
-              </table>
+            {activeMembers.length === 0 ? (
+              <div className="empty-state"><Users size={48} /><p>Nenhum membro ativo.</p></div>
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '0.85rem' }}>
+                {activeMembers.map(m => (
+                  <div key={m.id} style={{
+                    background: 'rgba(255,255,255,0.04)',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    borderRadius: '16px',
+                    padding: '1.25rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '1rem',
+                    transition: 'all 0.2s ease',
+                    animation: 'slideUp 0.3s ease',
+                  }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.07)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(86,155,103,0.2)'; }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.04)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.08)'; }}
+                  >
+                    {/* Avatar */}
+                    <div style={{
+                      width: '46px', height: '46px', flexShrink: 0,
+                      background: m.role === 'ADMIN' ? 'linear-gradient(135deg, #d4a032, #a0751a)' : getAvatarGradient(m.name),
+                      borderRadius: '50%',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: '1rem', fontWeight: '700', color: 'white',
+                      boxShadow: m.role === 'ADMIN' ? '0 0 12px rgba(212,160,50,0.35)' : '0 2px 8px rgba(0,0,0,0.3)',
+                    }}>
+                      {getInitials(m.name)}
+                    </div>
+
+                    {/* Info */}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.2rem' }}>
+                        <p style={{ fontWeight: '600', fontSize: '0.95rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{m.name}</p>
+                        {m.role === 'ADMIN' && (
+                          <span style={{ background: 'rgba(212,160,50,0.18)', border: '1px solid rgba(212,160,50,0.3)', borderRadius: '20px', padding: '0.1rem 0.5rem', fontSize: '0.65rem', color: '#ffb450', fontWeight: '600', flexShrink: 0 }}>
+                            ADMIN
+                          </span>
+                        )}
+                      </div>
+                      <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: '0.78rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{m.email}</p>
+                    </div>
+
+                    {/* Actions */}
+                    <div style={{ display: 'flex', gap: '0.35rem', flexShrink: 0 }}>
+                      <button
+                        onClick={() => toggleAdminRole(m.id, m.role)}
+                        title={m.role === 'ADMIN' ? 'Remover Admin' : 'Tornar Admin'}
+                        style={{
+                          background: m.role === 'ADMIN' ? 'rgba(255,180,80,0.12)' : 'rgba(100,180,255,0.1)',
+                          border: m.role === 'ADMIN' ? '1px solid rgba(255,180,80,0.25)' : '1px solid rgba(100,180,255,0.2)',
+                          color: m.role === 'ADMIN' ? '#ffb450' : 'var(--color-info)',
+                          cursor: 'pointer', padding: '0.45rem', borderRadius: '8px',
+                          transition: 'all 0.15s', display: 'flex', alignItems: 'center',
+                        }}
+                      >
+                        {m.role === 'ADMIN' ? <ShieldOff size={15} /> : <ShieldCheck size={15} />}
+                      </button>
+                      <button
+                        onClick={() => deactivateMember(m.id)}
+                        title="Desativar membro"
+                        style={{
+                          background: 'rgba(224,92,92,0.1)', border: '1px solid rgba(224,92,92,0.2)',
+                          color: 'rgba(224,92,92,0.7)', cursor: 'pointer', padding: '0.45rem',
+                          borderRadius: '8px', transition: 'all 0.15s', display: 'flex', alignItems: 'center',
+                        }}
+                        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(224,92,92,0.2)'; (e.currentTarget as HTMLElement).style.color = '#e05c5c'; }}
+                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(224,92,92,0.1)'; (e.currentTarget as HTMLElement).style.color = 'rgba(224,92,92,0.7)'; }}
+                      >
+                        <UserX size={15} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
               </div>
-            </div>
+            )}
           </section>
         </div>
       )}
