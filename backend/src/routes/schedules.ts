@@ -102,6 +102,40 @@ export const runAutoFill = async (scheduleId: string) => {
   return { warnings };
 };
 
+// Buscar escalas do usuário logado
+router.get('/my-schedules', requireAuth, async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) return;
+
+    // Buscar escalas futuras onde o user está como participante
+    const schedules = await prisma.schedule.findMany({
+      where: {
+        participants: {
+          some: { userId }
+        },
+        service: {
+          date: { gte: new Date(new Date().setHours(0, 0, 0, 0)) } // Hoje em diante
+        }
+      },
+      include: {
+        service: true,
+        participants: {
+          where: { userId },
+          include: { role: true }
+        }
+      },
+      orderBy: {
+        service: { date: 'asc' }
+      }
+    });
+
+    res.json(schedules);
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao buscar escalas do usuário' });
+  }
+});
+
 // Gerar escala automaticamente (Endpoint)
 router.post('/:id/auto-fill', requireAuth, requireAdmin, async (req: AuthRequest, res: Response): Promise<void> => {
   try {

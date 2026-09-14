@@ -36,9 +36,7 @@ export default function ServiceDetail() {
     try {
       const user = JSON.parse(localStorage.getItem('user') || '{}');
       setIsAdmin(user.role === 'ADMIN');
-      
-      const roles = user.memberRoles || [];
-      setIsMinister(roles.some((r: any) => r.role.name === 'Ministro' || r.role.name === 'Ministra'));
+      setIsMinister(user.isMinistro === true);
     } catch (e) {}
     fetchData();
   }, [id]);
@@ -227,14 +225,16 @@ export default function ServiceDetail() {
 
   return (
     <>
-      <header style={{ marginBottom: '3rem' }}>
+      <header style={{ marginBottom: '2rem' }}>
         <button onClick={() => navigate('/admin/services')} style={{
-          display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'none', border: 'none', color: 'var(--color-accent)', cursor: 'pointer', marginBottom: '1rem', fontWeight: '500'
+          display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'none', border: 'none',
+          color: 'var(--color-accent)', cursor: 'pointer', marginBottom: '0.75rem', fontWeight: '500',
+          fontSize: '0.9rem', padding: '0.4rem 0'
         }}>
-          <ArrowLeft size={20} /> Voltar
+          <ArrowLeft size={18} /> Voltar
         </button>
-        <h1 style={{ fontSize: '2.5rem' }}>Culto de {service.type}</h1>
-        <p style={{ color: 'var(--color-light)', marginTop: '0.5rem', fontSize: '1.2rem' }}>{formattedDate} às {service.time}</p>
+        <h1 style={{ fontSize: 'clamp(1.5rem, 5vw, 2.5rem)' }}>Culto de {service.type}</h1>
+        <p style={{ color: 'var(--color-light)', marginTop: '0.4rem', fontSize: 'clamp(0.9rem, 3vw, 1.2rem)' }}>{formattedDate} às {service.time}</p>
       </header>
 
       {/* Modal Nova Música */}
@@ -257,7 +257,7 @@ export default function ServiceDetail() {
         </div>
       )}
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 420px), 1fr))', gap: '1.5rem' }}>
         
         {/* ESCALA SECTION */}
         <div className="glass-panel">

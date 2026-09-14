@@ -1,6 +1,6 @@
 import { Router, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
-import { requireAuth, AuthRequest } from '../middleware/auth';
+import { requireAuth, requireAdminOrMinistro, AuthRequest } from '../middleware/auth';
 
 const router = Router();
 const prisma = new PrismaClient();
@@ -26,7 +26,7 @@ router.get('/service/:serviceId', requireAuth, async (req: AuthRequest, res: Res
 });
 
 // Salvar/Criar repertório de um culto
-router.post('/service/:serviceId', requireAuth, async (req: AuthRequest, res: Response): Promise<void> => {
+router.post('/service/:serviceId', requireAuth, requireAdminOrMinistro, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const serviceId = req.params.serviceId as string;
     const { songs, ministerId, notes } = req.body;

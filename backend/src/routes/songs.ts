@@ -1,6 +1,6 @@
 import { Router, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
-import { requireAuth, AuthRequest } from '../middleware/auth';
+import { requireAuth, requireAdminOrMinistro, AuthRequest } from '../middleware/auth';
 
 const router = Router();
 const prisma = new PrismaClient();
@@ -18,7 +18,7 @@ router.get('/', requireAuth, async (req: AuthRequest, res: Response) => {
 });
 
 // Criar nova música
-router.post('/', requireAuth, async (req: AuthRequest, res: Response): Promise<void> => {
+router.post('/', requireAuth, requireAdminOrMinistro, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { title, artist, key, links } = req.body;
     
@@ -37,7 +37,7 @@ router.post('/', requireAuth, async (req: AuthRequest, res: Response): Promise<v
 });
 
 // Editar música
-router.put('/:id', requireAuth, async (req: AuthRequest, res: Response) => {
+router.put('/:id', requireAuth, requireAdminOrMinistro, async (req: AuthRequest, res: Response) => {
   try {
     const { title, artist, key, links } = req.body;
     const songId = req.params.id as string;
@@ -51,13 +51,9 @@ router.put('/:id', requireAuth, async (req: AuthRequest, res: Response) => {
   }
 });
 
-// Excluir música (Apenas Admin?)
-router.delete('/:id', requireAuth, async (req: AuthRequest, res: Response) => {
+// Excluir música
+router.delete('/:id', requireAuth, requireAdminOrMinistro, async (req: AuthRequest, res: Response) => {
   try {
-    if (req.user?.role !== 'ADMIN') {
-      res.status(403).json({ error: 'Apenas administrador pode excluir' });
-      return;
-    }
     const songId = req.params.id as string;
     await prisma.song.delete({ where: { id: songId } });
     res.json({ message: 'Música excluída com sucesso' });

@@ -1,8 +1,47 @@
-/* === MOBILE RESPONSIVENESS === */
+/* ================================================
+   MOBILE RESPONSIVENESS — Ministério de Louvor
+   ================================================ */
+
+/* === BREAKPOINTS ===
+   Mobile:  ≤ 768px
+   Tablet:  769px – 1024px
+   Desktop: > 1024px
+*/
+
+/* -----------------------------------------------
+   SAFE AREA & ROOT FIXES
+----------------------------------------------- */
+@supports (padding: max(0px)) {
+  .bottom-nav {
+    padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+  }
+  .app-container {
+    padding-bottom: max(5.5rem, calc(env(safe-area-inset-bottom) + 4.5rem));
+  }
+}
+
+/* -----------------------------------------------
+   TABLET ADJUSTMENTS (769px - 1024px)
+----------------------------------------------- */
+@media (max-width: 1024px) and (min-width: 769px) {
+  .sidebar {
+    width: 220px !important;
+  }
+  .main-content {
+    margin-left: 220px !important;
+    padding: 1.8rem !important;
+  }
+}
+
+/* -----------------------------------------------
+   MOBILE CORE (≤ 768px)
+----------------------------------------------- */
 @media (max-width: 768px) {
+
+  /* Layout */
   .app-container {
     padding: 1rem;
-    padding-bottom: 5rem; /* Space for bottom nav */
+    padding-bottom: 5.5rem;
   }
 
   .sidebar {
@@ -11,64 +50,123 @@
 
   .main-content {
     margin-left: 0 !important;
+    padding: 1rem 1rem 6rem 1rem !important;
+    min-height: 100vh;
   }
 
+  /* Page Header — stack vertically */
   .page-header {
     flex-direction: column;
     align-items: flex-start;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
   }
 
   .page-title {
-    font-size: 1.8rem;
+    font-size: 1.65rem !important;
+    line-height: 1.2;
   }
 
-  .btn {
+  .page-subtitle {
+    font-size: 0.82rem;
+  }
+
+  /* Buttons — full width on header, keep inline elsewhere */
+  .page-header .btn {
     width: 100%;
     justify-content: center;
   }
 
-  .modal-box {
-    width: 95%;
-    padding: 1.5rem;
-    max-height: 90vh;
-    overflow-y: auto;
-  }
-
+  /* Glass panels */
   .glass-panel {
-    padding: 1rem;
+    padding: 1rem !important;
+    border-radius: 14px !important;
   }
 
+  /* Modals — take full screen on small phones */
+  .modal-overlay {
+    align-items: flex-end;
+  }
+
+  .modal-box {
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: 92vh;
+    overflow-y: auto;
+    border-radius: 20px 20px 0 0 !important;
+    padding: 1.5rem 1.25rem 2rem !important;
+    animation: slideUpMobile 0.25s ease !important;
+  }
+
+  /* Tables — horizontal scroll */
   .table-container {
     width: 100%;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+    border-radius: 12px;
   }
 
-  .data-table th, .data-table td {
-    padding: 0.8rem 0.5rem;
-    font-size: 0.85rem;
+  .data-table th,
+  .data-table td {
+    padding: 0.75rem 0.6rem;
+    font-size: 0.82rem;
+    white-space: nowrap;
   }
 
-  /* Adjust grid columns to be full width on mobile */
+  /* Grids → single column */
   .responsive-grid {
     grid-template-columns: 1fr !important;
   }
+
+  /* Dashboard — hero header */
+  [style*="fontSize: '2.4rem'"] {
+    font-size: 1.8rem !important;
+  }
+
+  /* Badges — smaller on mobile */
+  .badge {
+    font-size: 0.68rem;
+    padding: 0.2rem 0.5rem;
+  }
+
+  /* Songs card grid */
+  .songs-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Hide secondary text if space is tight */
+  .hide-mobile {
+    display: none !important;
+  }
+
+  /* Input / Select sizing */
+  .input-field,
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="date"],
+  input[type="time"],
+  select,
+  textarea {
+    font-size: 16px !important; /* Prevent iOS zoom */
+  }
 }
 
-/* === BOTTOM NAVIGATION (MOBILE ONLY) === */
+/* -----------------------------------------------
+   BOTTOM NAVIGATION (Mobile Only)
+----------------------------------------------- */
 .bottom-nav {
   display: none;
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  background: rgba(6, 57, 45, 0.95);
-  backdrop-filter: blur(10px);
-  border-top: 1px solid rgba(255,255,255,0.1);
-  padding: 0.5rem 1rem;
+  background: rgba(4, 22, 16, 0.97);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
   z-index: 999;
+  padding: 0.4rem 0.25rem 0.5rem;
 }
 
 .bottom-nav-list {
@@ -84,21 +182,194 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.2rem;
-  color: rgba(255,255,255,0.5);
+  gap: 0.18rem;
+  color: rgba(255, 255, 255, 0.38);
   text-decoration: none;
-  font-size: 0.65rem;
+  font-size: 0.6rem;
   font-family: var(--font-body);
-  transition: color 0.2s;
-  padding: 0.3rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  transition: color 0.18s, transform 0.18s;
+  padding: 0.35rem 0.5rem;
+  border-radius: 10px;
+  min-width: 48px;
+  position: relative;
+}
+
+.bottom-nav-item svg {
+  transition: transform 0.18s;
 }
 
 .bottom-nav-item.active {
   color: var(--color-light);
 }
 
+.bottom-nav-item.active svg {
+  transform: translateY(-2px);
+}
+
+/* Active indicator dot */
+.bottom-nav-item.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  background: var(--color-light);
+  border-radius: 50%;
+}
+
 @media (max-width: 768px) {
   .bottom-nav {
     display: block;
+  }
+}
+
+/* -----------------------------------------------
+   MOBILE DRAWER (for "More" menu on admin)
+----------------------------------------------- */
+.mobile-drawer-overlay {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .mobile-drawer-overlay {
+    display: flex;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(4px);
+    z-index: 1100;
+    align-items: flex-end;
+    animation: fadeIn 0.15s ease;
+  }
+
+  .mobile-drawer {
+    background: rgba(4, 26, 18, 0.98);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 24px 24px 0 0;
+    width: 100%;
+    padding: 1rem 1.25rem 2rem;
+    animation: slideUpMobile 0.25s ease;
+  }
+
+  .mobile-drawer-handle {
+    width: 36px;
+    height: 4px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 2px;
+    margin: 0 auto 1.25rem;
+  }
+
+  .mobile-drawer-title {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: rgba(255,255,255,0.3);
+    padding: 0 0.25rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .mobile-drawer-link {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 0.85rem 1rem;
+    border-radius: 12px;
+    color: rgba(255,255,255,0.7);
+    font-size: 0.95rem;
+    font-family: var(--font-body);
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.15s;
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    width: 100%;
+    text-align: left;
+  }
+
+  .mobile-drawer-link:hover,
+  .mobile-drawer-link:active {
+    background: rgba(255,255,255,0.07);
+    color: white;
+  }
+
+  .mobile-drawer-link.active-link {
+    background: rgba(86,155,103,0.15);
+    color: var(--color-light);
+    border: 1px solid rgba(86,155,103,0.2);
+  }
+}
+
+/* -----------------------------------------------
+   EXTRA ANIMATIONS
+----------------------------------------------- */
+@keyframes slideUpMobile {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+/* -----------------------------------------------
+   SERVICE DETAIL — mobile fix
+----------------------------------------------- */
+@media (max-width: 768px) {
+  /* Stack the two-column repertoire layout */
+  .repertoire-two-col {
+    flex-direction: column !important;
+  }
+
+  /* Make action buttons larger touch targets */
+  button[title="Excluir"],
+  button[title="Editar"] {
+    min-width: 36px;
+    min-height: 36px;
+  }
+
+  /* Schedules participant list */
+  .participant-row {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+}
+
+/* -----------------------------------------------
+   SONGS GRID — mobile
+----------------------------------------------- */
+@media (max-width: 768px) {
+  [style*="gridTemplateColumns"] {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* -----------------------------------------------
+   MEMBERS GRID — mobile
+----------------------------------------------- */
+@media (max-width: 640px) {
+  .members-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* -----------------------------------------------
+   DASHBOARD HERO — mobile
+----------------------------------------------- */
+@media (max-width: 768px) {
+  .dashboard-hero {
+    flex-direction: column !important;
+    padding: 1.5rem !important;
+  }
+
+  .dashboard-stat-box {
+    width: 100% !important;
+    text-align: left !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
   }
 }

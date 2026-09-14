@@ -47,6 +47,9 @@ export default function Songs() {
   const [key, setKey] = useState('');
   const [links, setLinks] = useState('');
 
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const canEdit = user.role === 'ADMIN' || user.isMinistro;
+
   const fetchSongs = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -110,10 +113,12 @@ export default function Songs() {
           <h1 className="page-title">Biblioteca de Músicas</h1>
           <p className="page-subtitle">{songs.length} músicas no acervo do Ministério</p>
         </div>
-        <button onClick={() => { setShowModal(true); setEditingId(null); setTitle(''); setArtist(''); setKey(''); setLinks(''); }}
-          className="btn btn-primary">
-          <Plus size={18} /> Nova Música
-        </button>
+        {canEdit && (
+          <button onClick={() => { setShowModal(true); setEditingId(null); setTitle(''); setArtist(''); setKey(''); setLinks(''); }}
+            className="btn btn-primary">
+            <Plus size={18} /> Nova Música
+          </button>
+        )}
       </div>
 
       {/* Search */}
@@ -190,20 +195,22 @@ export default function Songs() {
                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.04)'; (e.currentTarget as HTMLElement).style.borderTopColor = `${keyColor}22`; (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'; }}
               >
                 {/* Actions */}
-                <div style={{ position: 'absolute', top: '1rem', right: '1rem', display: 'flex', gap: '0.3rem' }}>
-                  <button onClick={() => editSong(song)} title="Editar"
-                    style={{ background: 'rgba(255,255,255,0.07)', border: 'none', color: 'rgba(255,255,255,0.5)', cursor: 'pointer', padding: '0.35rem', borderRadius: '6px', transition: 'all 0.15s', display: 'flex', alignItems: 'center' }}
-                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = 'white'; (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.15)'; }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.5)'; (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.07)'; }}>
-                    <Edit2 size={13} />
-                  </button>
-                  <button onClick={() => deleteSong(song.id)} title="Excluir"
-                    style={{ background: 'rgba(224,92,92,0.1)', border: 'none', color: 'rgba(224,92,92,0.6)', cursor: 'pointer', padding: '0.35rem', borderRadius: '6px', transition: 'all 0.15s', display: 'flex', alignItems: 'center' }}
-                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = '#e05c5c'; (e.currentTarget as HTMLElement).style.background = 'rgba(224,92,92,0.2)'; }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(224,92,92,0.6)'; (e.currentTarget as HTMLElement).style.background = 'rgba(224,92,92,0.1)'; }}>
-                    <Trash2 size={13} />
-                  </button>
-                </div>
+                {canEdit && (
+                  <div style={{ position: 'absolute', top: '1rem', right: '1rem', display: 'flex', gap: '0.3rem' }}>
+                    <button onClick={() => editSong(song)} title="Editar"
+                      style={{ background: 'rgba(255,255,255,0.07)', border: 'none', color: 'rgba(255,255,255,0.5)', cursor: 'pointer', padding: '0.35rem', borderRadius: '6px', transition: 'all 0.15s', display: 'flex', alignItems: 'center' }}
+                      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = 'white'; (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.15)'; }}
+                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.5)'; (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.07)'; }}>
+                      <Edit2 size={13} />
+                    </button>
+                    <button onClick={() => deleteSong(song.id)} title="Excluir"
+                      style={{ background: 'rgba(224,92,92,0.1)', border: 'none', color: 'rgba(224,92,92,0.6)', cursor: 'pointer', padding: '0.35rem', borderRadius: '6px', transition: 'all 0.15s', display: 'flex', alignItems: 'center' }}
+                      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = '#e05c5c'; (e.currentTarget as HTMLElement).style.background = 'rgba(224,92,92,0.2)'; }}
+                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(224,92,92,0.6)'; (e.currentTarget as HTMLElement).style.background = 'rgba(224,92,92,0.1)'; }}>
+                      <Trash2 size={13} />
+                    </button>
+                  </div>
+                )}
 
                 {/* Icon */}
                 <div style={{

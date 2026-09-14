@@ -5,10 +5,11 @@ import { Calendar, Music, Bell, ChevronRight, Users, CheckCircle2, Clock, AlertC
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const [user, setUser] = useState<{name: string, role: string} | null>(null);
+  const [user, setUser] = useState<{name: string, role: string, isMinistro?: boolean} | null>(null);
   const [nextService, setNextService] = useState<any>(null);
   const [allServices, setAllServices] = useState<any[]>([]);
   const [notices, setNotices] = useState<any[]>([]);
+  const [mySchedules, setMySchedules] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -22,15 +23,19 @@ export default function Dashboard() {
   const fetchDashboardData = async () => {
     try {
       const token = localStorage.getItem('token');
-      const [servicesRes, noticesRes] = await Promise.all([
+      const [servicesRes, noticesRes, mySchedulesRes] = await Promise.all([
         fetch(`${API_URL}/api/services`, { headers: { Authorization: `Bearer ${token}` } }),
-        fetch(`${API_URL}/api/notices`, { headers: { Authorization: `Bearer ${token}` } })
+        fetch(`${API_URL}/api/notices`, { headers: { Authorization: `Bearer ${token}` } }),
+        fetch(`${API_URL}/api/schedules/my-schedules`, { headers: { Authorization: `Bearer ${token}` } })
       ]);
       const services = await servicesRes.json();
       const noticesData = await noticesRes.json();
+      const mySchedulesData = await mySchedulesRes.json();
       
       setAllServices(services);
       setNotices(noticesData.slice(0, 3)); // Pega os 3 mais recentes
+      setMySchedules(mySchedulesData || []);
+      
       const now = new Date();
       now.setHours(0, 0, 0, 0);
       const upcoming = services.find((s: any) => new Date(s.date) >= now);
@@ -94,6 +99,52 @@ export default function Dashboard() {
           <p style={{ fontSize: '2.8rem', fontWeight: '700', lineHeight: 1 }}>{loading ? '—' : allServices.length}</p>
         </div>
       </div>
+
+      {/* My Schedules Widget */}
+      {!loading && mySchedules.length > 0 && (
+        <div style={{ marginBottom: '2rem' }}>
+          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '1rem' }}>
+            Minhas Escalas
+          </p>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem' }}>
+            {mySchedules.map((schedule: any) => {
+              const d = new Date(schedule.service.date);
+              const dayStr = d.toLocaleDateString('pt-BR', { weekday: 'long' });
+              const dateStr = d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+              const myRoles = schedule.participants.map((p: any) => p.role.name).join(', ');
+
+              return (
+                <div key={schedule.id} onClick={() => navigate(`/admin/services/${schedule.service.id}`)}
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(86,155,103,0.15) 0%, rgba(255,255,255,0.03) 100%)',
+                    border: '1px solid rgba(86,155,103,0.3)',
+                    borderRadius: '16px', padding: '1.25rem', cursor: 'pointer',
+                    transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '1rem'
+                  }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(-3px)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 8px 24px rgba(86,155,103,0.15)'; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'; (e.currentTarget as HTMLElement).style.boxShadow = 'none'; }}
+                >
+                  <div style={{
+                    background: 'rgba(86,155,103,0.2)', color: '#a7cfa8',
+                    padding: '0.5rem', borderRadius: '12px', textAlign: 'center', minWidth: '60px'
+                  }}>
+                    <p style={{ fontSize: '1.3rem', fontWeight: '700', lineHeight: 1 }}>{dateStr.split('/')[0]}</p>
+                    <p style={{ fontSize: '0.65rem', textTransform: 'uppercase', marginTop: '0.2rem' }}>{d.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '')}</p>
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <p style={{ fontSize: '0.95rem', fontWeight: '600', textTransform: 'capitalize' }}>{dayStr}</p>
+                    <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', marginTop: '0.2rem' }}>{schedule.service.type} · {schedule.service.time}</p>
+                    <div style={{ marginTop: '0.5rem', display: 'inline-flex', background: 'rgba(255,255,255,0.1)', padding: '0.2rem 0.6rem', borderRadius: '20px', fontSize: '0.7rem', color: '#fff', alignItems: 'center', gap: '0.3rem' }}>
+                      <Users size={10} /> {myRoles}
+                    </div>
+                  </div>
+                  <ChevronRight size={16} style={{ opacity: 0.3 }} />
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Status Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(270px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
@@ -251,36 +302,37 @@ export default function Dashboard() {
                     display: 'flex', alignItems: 'center', gap: '1.2rem',
                     padding: '1rem 1.2rem',
                     background: isNext ? 'rgba(167,207,168,0.06)' : 'rgba(255,255,255,0.02)',
-                    border: isNext ? '1px solid rgba(167,207,168,0.18)' : '1px solid rgba(255,255,255,0.04)',
+                    border: isNext ? '1px solid rgba(167,207,168,0.2)' : '1px solid rgba(255,255,255,0.05)',
                     borderRadius: '12px',
                     cursor: 'pointer',
-                    transition: 'background 0.18s',
-                  }}>
-                  <div style={{ textAlign: 'center', minWidth: '44px' }}>
-                    <p style={{ fontSize: '1.5rem', fontWeight: '700', lineHeight: 1 }}>{d.getDate().toString().padStart(2, '0')}</p>
-                    <p style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase' }}>{d.toLocaleDateString('pt-BR', { month: 'short' })}</p>
-                  </div>
-                  <div style={{ width: '1px', height: '36px', background: 'rgba(255,255,255,0.08)' }} />
-                  <div style={{ flex: 1 }}>
-                    <p style={{ fontWeight: '600', fontSize: '0.92rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      Culto de {service.type}
-                      {isNext && <span style={{ fontSize: '0.65rem', background: 'rgba(167,207,168,0.2)', color: '#a7cfa8', padding: '0.15rem 0.45rem', borderRadius: '5px' }}>Próximo</span>}
-                    </p>
-                    <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.35)', marginTop: '0.2rem' }}>
-                      {service.schedules?.[0]?.band?.name || 'Sem banda definida'} · {service.time}
-                    </p>
-                  </div>
+                    transition: 'all 0.2s',
+                  }}
+                >
                   <div style={{
-                    display: 'flex', alignItems: 'center', gap: '0.4rem',
-                    fontSize: '0.73rem', fontWeight: '500',
-                    color: hasRep ? '#a7cfa8' : '#ffb450',
-                    background: hasRep ? 'rgba(167,207,168,0.1)' : 'rgba(255,180,80,0.1)',
-                    padding: '0.3rem 0.7rem', borderRadius: '8px'
+                    background: isNext ? 'rgba(167,207,168,0.2)' : 'rgba(255,255,255,0.08)',
+                    color: isNext ? '#a7cfa8' : 'rgba(255,255,255,0.7)',
+                    padding: '0.5rem',
+                    borderRadius: '8px',
+                    textAlign: 'center',
+                    minWidth: '55px'
                   }}>
-                    {hasRep ? <CheckCircle2 size={12} /> : <Clock size={12} />}
-                    {hasRep ? 'OK' : 'Pendente'}
+                    <p style={{ fontSize: '1.2rem', fontWeight: '700', lineHeight: 1 }}>{d.toLocaleDateString('pt-BR', { day: '2-digit' })}</p>
+                    <p style={{ fontSize: '0.65rem', textTransform: 'uppercase', marginTop: '0.2rem' }}>{d.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '')}</p>
                   </div>
-                  <ChevronRight size={15} style={{ opacity: 0.25 }} />
+                  <div style={{ flex: 1 }}>
+                    <p style={{ fontSize: '0.95rem', fontWeight: '600', color: isNext ? 'white' : 'rgba(255,255,255,0.8)' }}>
+                      {d.toLocaleDateString('pt-BR', { weekday: 'long' }).replace('-feira', '')}
+                    </p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.3rem' }}>
+                      <span style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)' }}>{service.time}</span>
+                      <span style={{ color: 'rgba(255,255,255,0.2)' }}>•</span>
+                      <span style={{ fontSize: '0.75rem', color: hasRep ? '#64b4ff' : '#ffb450', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
+                        {hasRep ? <CheckCircle2 size={10} /> : <Clock size={10} />}
+                        {hasRep ? 'Repertório pronto' : 'Pendente'}
+                      </span>
+                    </div>
+                  </div>
+                  <ChevronRight size={16} style={{ opacity: 0.3 }} />
                 </div>
               );
             })}
@@ -290,5 +342,3 @@ export default function Dashboard() {
     </div>
   );
 }
-
-

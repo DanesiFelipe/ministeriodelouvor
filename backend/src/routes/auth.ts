@@ -16,7 +16,14 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
   }
 
   try {
-    const user = await prisma.user.findUnique({ where: { username } });
+    const user = await prisma.user.findUnique({ 
+      where: { username },
+      include: {
+        memberRoles: {
+          include: { role: true }
+        }
+      }
+    });
 
     if (!user) {
       res.status(401).json({ error: 'Credenciais inválidas' });
@@ -35,8 +42,13 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
+    const isMinistro = user.memberRoles.some(mr => 
+      mr.role.name.toLowerCase().includes('ministro') || 
+      mr.role.name.toLowerCase().includes('ministra')
+    );
+
     const token = jwt.sign(
-      { id: user.id, role: user.role },
+      { id: user.id, role: user.role, isMinistro },
       JWT_SECRET,
       { expiresIn: '7d' }
     );
@@ -48,7 +60,8 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
         id: user.id,
         name: user.name,
         username: user.username,
-        role: user.role
+        role: user.role,
+        isMinistro
       }
     });
   } catch (error) {

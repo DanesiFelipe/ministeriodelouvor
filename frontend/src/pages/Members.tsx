@@ -157,7 +157,7 @@ export default function Members() {
               O membro receberá acesso ao sistema com as permissões configuradas.
             </p>
             <form onSubmit={handleCreateMember} style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.9rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))', gap: '0.9rem' }}>
                 <div>
                   <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)' }}>Nome Completo *</label>
                   <input placeholder="João da Silva" required value={name} onChange={e => setName(e.target.value)} style={inputStyle} />
@@ -167,7 +167,7 @@ export default function Members() {
                   <input placeholder="joao" required value={username} onChange={e => setUsername(e.target.value)} style={inputStyle} />
                 </div>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.9rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))', gap: '0.9rem' }}>
                 <div>
                   <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)' }}>Telefone (WhatsApp)</label>
                   <input placeholder="(11) 99999-9999" value={phone} onChange={e => setPhone(e.target.value)} style={inputStyle} />

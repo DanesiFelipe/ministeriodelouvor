@@ -7,6 +7,7 @@ export interface AuthRequest extends Request {
   user?: {
     id: string;
     role: string;
+    isMinistro?: boolean;
   };
 }
 
@@ -32,6 +33,14 @@ export const requireAuth = (req: AuthRequest, res: Response, next: NextFunction)
 export const requireAdmin = (req: AuthRequest, res: Response, next: NextFunction): void => {
   if (!req.user || req.user.role !== 'ADMIN') {
     res.status(403).json({ error: 'Acesso negado. Requer privilégios de Administrador.' });
+    return;
+  }
+  next();
+};
+
+export const requireAdminOrMinistro = (req: AuthRequest, res: Response, next: NextFunction): void => {
+  if (!req.user || (req.user.role !== 'ADMIN' && !req.user.isMinistro)) {
+    res.status(403).json({ error: 'Acesso negado. Requer privilégios de Ministro ou Administrador.' });
     return;
   }
   next();
