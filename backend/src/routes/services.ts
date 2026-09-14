@@ -128,10 +128,27 @@ router.put('/:id', requireAuth, requireAdmin, async (req: AuthRequest, res: Resp
 router.delete('/:id', requireAuth, requireAdmin, async (req: AuthRequest, res: Response) => {
   try {
     const id = req.params.id as string;
+
+    // Delete schedules and their participants
+    const schedules = await prisma.schedule.findMany({ where: { serviceId: id } });
+    for (const schedule of schedules) {
+      await prisma.scheduleParticipant.deleteMany({ where: { scheduleId: schedule.id } });
+    }
+    await prisma.schedule.deleteMany({ where: { serviceId: id } });
+
+    // Delete repertoires and their songs
+    const repertoires = await prisma.repertoire.findMany({ where: { serviceId: id } });
+    for (const repertoire of repertoires) {
+      await prisma.repertoireSong.deleteMany({ where: { repertoireId: repertoire.id } });
+    }
+    await prisma.repertoire.deleteMany({ where: { serviceId: id } });
+
+    // Finally delete the service
     await prisma.service.delete({ where: { id } });
-    res.json({ message: 'Culto removido' });
+    res.json({ message: 'Culto removido com sucesso' });
   } catch (error) {
-    res.status(500).json({ error: 'Erro ao remover culto. Remova as escalas associadas primeiro.' });
+    console.error(error);
+    res.status(500).json({ error: 'Erro ao remover culto' });
   }
 });
 

@@ -1,6 +1,6 @@
 import { API_URL } from '../config';
 import { useEffect, useState } from 'react';
-import { Calendar, Plus, Music, ChevronRight, CheckCircle2, Clock, Sparkles } from 'lucide-react';
+import { Calendar, Plus, Music, ChevronRight, CheckCircle2, Clock, Sparkles, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface Service {
@@ -88,6 +88,21 @@ export default function Services() {
     } catch (err) { alert('Erro ao gerar mês'); }
   };
 
+  const deleteService = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!window.confirm('Tem certeza que deseja excluir este culto? Isso apagará também as escalas e repertórios vinculados.')) return;
+    try {
+      const token = localStorage.getItem('token');
+      await fetch(`${API_URL}/api/services/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      fetchServices();
+    } catch (err) {
+      alert('Erro ao excluir culto');
+    }
+  };
+
   const now = new Date(); now.setHours(0, 0, 0, 0);
   const upcoming = services.filter(s => new Date(s.date) >= now);
   const past = services.filter(s => new Date(s.date) < now);
@@ -154,7 +169,21 @@ export default function Services() {
               </span>
             </div>
           </div>
-          <ChevronRight size={16} style={{ opacity: 0.25, marginTop: '0.3rem', flexShrink: 0 }} />
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
+            {isAdmin && (
+              <button 
+                onClick={(e) => deleteService(s.id, e)}
+                style={{
+                  background: 'none', border: 'none', color: '#ff6b6b', cursor: 'pointer',
+                  padding: '0.4rem', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center'
+                }}
+                title="Excluir Culto"
+              >
+                <Trash2 size={16} />
+              </button>
+            )}
+            <ChevronRight size={16} style={{ opacity: 0.25, marginTop: '0.3rem', flexShrink: 0 }} />
+          </div>
         </div>
       </div>
     );
