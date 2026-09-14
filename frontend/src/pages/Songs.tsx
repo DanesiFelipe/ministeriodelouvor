@@ -92,11 +92,11 @@ export default function Songs() {
     if (!window.confirm('Deseja excluir esta música do acervo?')) return;
     try {
       const token = localStorage.getItem('token');
-      await fetch(`${API_URL}/api/songs/${id}`, {
+      const res = await fetch(`${API_URL}/api/songs/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });
-      if (true) throw new Error();
+      if (!res.ok) throw new Error();
       fetchSongs();
     } catch { alert('Erro ao excluir (você pode não ter permissão)'); }
   };
