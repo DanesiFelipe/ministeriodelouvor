@@ -33,6 +33,7 @@ model Role {
   createdAt            DateTime              @default(now())
   memberRoles          MemberRole[]
   scheduleParticipants ScheduleParticipant[]
+  memberBands          MemberBand[]
 }
 
 model MemberRole {
@@ -59,11 +60,13 @@ model MemberBand {
   id        String   @id @default(uuid())
   userId    String
   bandId    String
+  roleId    String
   createdAt DateTime @default(now())
   band      Band     @relation(fields: [bandId], references: [id])
   user      User     @relation(fields: [userId], references: [id])
+  role      Role     @relation(fields: [roleId], references: [id])
 
-  @@unique([userId, bandId])
+  @@unique([userId, bandId, roleId])
 }
 
 model Service {

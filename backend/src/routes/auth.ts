@@ -124,9 +124,7 @@ router.post('/register', async (req: Request, res: Response): Promise<void> => {
       await prisma.memberRole.createMany({ data: memberRolesData });
     }
 
-    if (bandId) {
-      await prisma.memberBand.create({ data: { userId: user.id, bandId } });
-    }
+    // bandId desativado no registro pois agora exige roleId (adicionar via painel de bandas)
 
     res.status(201).json({ message: 'Cadastro realizado com sucesso!' });
   } catch (error) {

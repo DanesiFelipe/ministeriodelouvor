@@ -63,7 +63,8 @@ router.get('/:id/members', requireAuth, async (req: AuthRequest, res: Response) 
     const members = await prisma.memberBand.findMany({
       where: { bandId },
       include: {
-        user: { select: { id: true, name: true, email: true } }
+        user: { select: { id: true, name: true, email: true } },
+        role: true
       }
     });
     res.json(members);
@@ -75,15 +76,15 @@ router.get('/:id/members', requireAuth, async (req: AuthRequest, res: Response) 
 router.post('/:id/members', requireAuth, requireAdmin, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const bandId = req.params.id as string;
-    const { userId } = req.body;
+    const { userId, roleId } = req.body;
     
-    if (!userId) {
-      res.status(400).json({ error: 'Usuário é obrigatório' });
+    if (!userId || !roleId) {
+      res.status(400).json({ error: 'Usuário e Função (roleId) são obrigatórios' });
       return;
     }
 
     const memberBand = await prisma.memberBand.create({
-      data: { bandId, userId }
+      data: { bandId, userId, roleId }
     });
     res.status(201).json(memberBand);
   } catch (error) {
@@ -91,15 +92,12 @@ router.post('/:id/members', requireAuth, requireAdmin, async (req: AuthRequest, 
   }
 });
 
-router.delete('/:id/members/:userId', requireAuth, requireAdmin, async (req: AuthRequest, res: Response) => {
+router.delete('/:id/members/:memberBandId', requireAuth, requireAdmin, async (req: AuthRequest, res: Response) => {
   try {
-    const bandId = req.params.id as string;
-    const userId = req.params.userId as string;
+    const memberBandId = req.params.memberBandId as string;
     
     await prisma.memberBand.delete({
-      where: {
-        userId_bandId: { userId, bandId }
-      }
+      where: { id: memberBandId }
     });
     res.json({ message: 'Membro removido da banda' });
   } catch (error) {

@@ -27,10 +27,8 @@ export default function Login() {
         throw new Error(data.error || 'Erro ao realizar login');
       }
 
-      // Salva o token no localStorage para uso futuro
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
-      
       navigate('/admin/dashboard');
     } catch (err: any) {
       setError(err.message);
@@ -39,83 +37,121 @@ export default function Login() {
     }
   };
 
+  const inputStyle: React.CSSProperties = {
+    width: '100%',
+    padding: '0.7rem 0.9rem',
+    borderRadius: '6px',
+    background: 'rgba(255,255,255,0.05)',
+    border: '1px solid rgba(255,255,255,0.12)',
+    color: 'rgba(255,255,255,0.9)',
+    fontFamily: 'var(--font-body)',
+    fontSize: '0.9rem',
+    outline: 'none',
+    transition: 'border-color 140ms ease',
+  };
+
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <img src="/logo.png" className="watermark-logo" alt="Logo Menonita" />
-      
-      <div className="glass-panel" style={{ width: '100%', maxWidth: '400px', padding: '3rem', position: 'relative', zIndex: 1 }}>
-        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <h2 style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>Acesso Restrito</h2>
-          <p style={{ color: 'var(--color-light)', fontSize: '0.9rem' }}>Entre com suas credenciais de acesso</p>
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
+      <img src="/logo.png" className="watermark-logo" alt="" aria-hidden="true" />
+
+      <div style={{ width: '100%', maxWidth: '360px', position: 'relative', zIndex: 1 }}>
+        {/* Header */}
+        <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '2rem', fontWeight: '400', lineHeight: 1.2, marginBottom: '0.5rem' }}>
+            Bem-vindo
+          </h1>
+          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.875rem' }}>
+            Entre com suas credenciais de acesso
+          </p>
         </div>
 
+        {/* Error */}
         {error && (
-          <div style={{ background: 'rgba(255,0,0,0.2)', border: '1px solid rgba(255,0,0,0.3)', padding: '0.8rem', borderRadius: '8px', marginBottom: '1.5rem', color: '#ffcccc', fontSize: '0.9rem', textAlign: 'center' }}>
+          <div style={{
+            background: 'rgba(217,96,96,0.12)',
+            border: '1px solid rgba(217,96,96,0.28)',
+            padding: '0.75rem 1rem',
+            borderRadius: '6px',
+            marginBottom: '1.5rem',
+            color: '#e08080',
+            fontSize: '0.875rem',
+          }}>
             {error}
           </div>
         )}
 
-        <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            <label style={{ fontSize: '0.9rem', color: 'var(--color-light)' }}>Usuário</label>
-            <input 
-              type="text" 
+        {/* Form */}
+        <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          <div>
+            <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem', fontWeight: '500', color: 'rgba(255,255,255,0.45)' }}>
+              Usuário
+            </label>
+            <input
+              type="text"
               required
+              autoComplete="username"
               value={username}
               onChange={e => setUsername(e.target.value)}
-              style={{ 
-                background: 'rgba(255,255,255,0.1)', 
-                border: '1px solid rgba(255,255,255,0.2)', 
-                padding: '0.8rem', 
-                borderRadius: '8px', 
-                color: 'white',
-                fontFamily: 'var(--font-body)',
-                outline: 'none'
-              }} 
+              style={inputStyle}
+              onFocus={e => (e.target.style.borderColor = 'rgba(78,148,96,0.7)')}
+              onBlur={e => (e.target.style.borderColor = 'rgba(255,255,255,0.12)')}
             />
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            <label style={{ fontSize: '0.9rem', color: 'var(--color-light)' }}>Senha</label>
-            <input 
-              type="password" 
+          <div>
+            <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem', fontWeight: '500', color: 'rgba(255,255,255,0.45)' }}>
+              Senha
+            </label>
+            <input
+              type="password"
               required
+              autoComplete="current-password"
               value={password}
               onChange={e => setPassword(e.target.value)}
-              style={{ 
-                background: 'rgba(255,255,255,0.1)', 
-                border: '1px solid rgba(255,255,255,0.2)', 
-                padding: '0.8rem', 
-                borderRadius: '8px', 
-                color: 'white',
-                fontFamily: 'var(--font-body)',
-                outline: 'none'
-              }} 
+              style={inputStyle}
+              onFocus={e => (e.target.style.borderColor = 'rgba(78,148,96,0.7)')}
+              onBlur={e => (e.target.style.borderColor = 'rgba(255,255,255,0.12)')}
             />
           </div>
 
-          <button 
-            type="submit" 
-            disabled={loading}
-            style={{ 
-              background: 'var(--color-white)', 
-              color: 'var(--color-primary)',
-              border: 'none',
-              padding: '1rem',
-              borderRadius: '8px',
-              fontFamily: 'var(--font-heading)',
-              fontWeight: '600',
-              cursor: loading ? 'not-allowed' : 'pointer',
-              fontSize: '1rem',
-              marginTop: '1rem',
-              opacity: loading ? 0.7 : 1
-            }}
-          >
-            {loading ? 'Entrando...' : 'Entrar no Sistema'}
-          </button>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '0.5rem' }}>
+            <button
+              type="submit"
+              disabled={loading}
+              style={{
+                width: '100%',
+                background: loading ? 'rgba(78,148,96,0.6)' : 'var(--color-accent)',
+                color: '#fff',
+                border: 'none',
+                padding: '0.75rem',
+                borderRadius: '6px',
+                fontFamily: 'var(--font-body)',
+                fontWeight: '500',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                fontSize: '0.9rem',
+                transition: 'background 140ms ease',
+              }}
+              onMouseEnter={e => { if (!loading) (e.currentTarget as HTMLElement).style.background = 'var(--color-accent-hi)'; }}
+              onMouseLeave={e => { if (!loading) (e.currentTarget as HTMLElement).style.background = 'var(--color-accent)'; }}
+            >
+              {loading ? 'Entrando...' : 'Entrar'}
+            </button>
 
-          <div style={{ textAlign: 'center', marginTop: '1rem' }}>
-            <button type="button" onClick={() => navigate('/register')} style={{ background: 'none', border: 'none', color: 'var(--color-light)', cursor: 'pointer', textDecoration: 'underline' }}>
+            <button
+              type="button"
+              onClick={() => navigate('/register')}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: 'rgba(255,255,255,0.35)',
+                cursor: 'pointer',
+                fontSize: '0.83rem',
+                fontFamily: 'var(--font-body)',
+                transition: 'color 140ms ease',
+              }}
+              onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.65)')}
+              onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.35)')}
+            >
               Ainda não tem conta? Cadastrar-se
             </button>
           </div>

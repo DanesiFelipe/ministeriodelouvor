@@ -1,10 +1,12 @@
 import { API_URL } from '../config';
 import { useEffect, useState } from 'react';
 import { Trash2, Plus, Guitar, Users, UserPlus } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 interface Band { id: string; name: string; description: string; }
 interface User { id: string; name: string; email: string; }
-interface MemberBand { id: string; userId: string; bandId: string; user: User; }
+interface Role { id: string; name: string; }
+interface MemberBand { id: string; userId: string; bandId: string; user: User; role?: Role; }
 
 const inputStyle = {
   padding: '0.8rem 1rem', borderRadius: '8px', background: 'rgba(255,255,255,0.07)',
@@ -25,12 +27,15 @@ export default function Bands() {
   const [selectedBand, setSelectedBand] = useState<Band | null>(null);
   const [bandMembers, setBandMembers] = useState<MemberBand[]>([]);
   const [allUsers, setAllUsers] = useState<User[]>([]);
+  const [allRoles, setAllRoles] = useState<Role[]>([]);
   const [selectedUserToAdd, setSelectedUserToAdd] = useState('');
+  const [selectedRoleToAdd, setSelectedRoleToAdd] = useState('');
 
   useEffect(() => {
     try { const user = JSON.parse(localStorage.getItem('user') || '{}'); setIsAdmin(user.role === 'ADMIN'); } catch (e) {}
     fetchBands();
     fetchAllUsers();
+    fetchAllRoles();
   }, []);
 
   const fetchBands = async () => {
@@ -50,6 +55,14 @@ export default function Bands() {
     } catch (err) { console.error(err); }
   };
 
+  const fetchAllRoles = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_URL}/api/roles`, { headers: { Authorization: `Bearer ${token}` } });
+      setAllRoles(await res.json());
+    } catch (err) { console.error(err); }
+  };
+
   const fetchBandMembers = async (bandId: string) => {
     try {
       const token = localStorage.getItem('token');
@@ -60,25 +73,35 @@ export default function Bands() {
 
   const createBand = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      const token = localStorage.getItem('token');
-      await fetch(`${API_URL}/api/bands`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ name, description })
-      });
+    const token = localStorage.getItem('token');
+    const req = fetch(`${API_URL}/api/bands`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ name, description })
+    }).then(async res => {
+      if (!res.ok) throw new Error();
       setShowModal(false); setName(''); setDescription('');
       fetchBands();
-    } catch { alert('Erro ao criar banda'); }
+    });
+
+    toast.promise(req, {
+      loading: 'Criando banda...',
+      success: 'Banda criada com sucesso!',
+      error: 'Erro ao criar banda'
+    });
   };
 
   const deleteBand = async (id: string) => {
     if (!window.confirm('Excluir esta banda?')) return;
-    try {
-      const token = localStorage.getItem('token');
-      await fetch(`${API_URL}/api/bands/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
-      fetchBands();
-    } catch { alert('Erro ao excluir'); }
+    const token = localStorage.getItem('token');
+    const req = fetch(`${API_URL}/api/bands/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } })
+      .then(async res => { if(!res.ok) throw new Error(); fetchBands(); });
+      
+    toast.promise(req, {
+      loading: 'Excluindo banda...',
+      success: 'Banda excluída!',
+      error: 'Erro ao excluir'
+    });
   };
 
   const openMembersModal = (band: Band) => {
@@ -89,31 +112,44 @@ export default function Bands() {
 
   const addMemberToBand = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedBand || !selectedUserToAdd) return;
-    try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/api/bands/${selectedBand.id}/members`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ userId: selectedUserToAdd })
-      });
-      if (!res.ok) throw new Error('Erro (membro já pode estar na banda)');
+    if (!selectedBand || !selectedUserToAdd || !selectedRoleToAdd) {
+      toast.error('Selecione um usuário e uma função');
+      return;
+    }
+    
+    const token = localStorage.getItem('token');
+    const req = fetch(`${API_URL}/api/bands/${selectedBand.id}/members`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ userId: selectedUserToAdd, roleId: selectedRoleToAdd })
+    }).then(async res => {
+      if (!res.ok) throw new Error('Erro ao adicionar');
       setSelectedUserToAdd('');
+      setSelectedRoleToAdd('');
       fetchBandMembers(selectedBand.id);
-    } catch (err: any) { alert(err.message); }
+    });
+
+    toast.promise(req, {
+      loading: 'Adicionando membro...',
+      success: 'Membro adicionado com sucesso!',
+      error: 'Erro ao adicionar membro'
+    });
   };
 
-  const removeMemberFromBand = async (userId: string) => {
+  const removeMemberFromBand = async (memberBandId: string) => {
     if (!selectedBand) return;
     if (!window.confirm('Remover membro desta banda?')) return;
-    try {
-      const token = localStorage.getItem('token');
-      await fetch(`${API_URL}/api/bands/${selectedBand.id}/members/${userId}`, { 
-        method: 'DELETE', 
-        headers: { Authorization: `Bearer ${token}` } 
-      });
-      fetchBandMembers(selectedBand.id);
-    } catch { alert('Erro ao remover'); }
+    const token = localStorage.getItem('token');
+    const req = fetch(`${API_URL}/api/bands/${selectedBand.id}/members/${memberBandId}`, { 
+      method: 'DELETE', 
+      headers: { Authorization: `Bearer ${token}` } 
+    }).then(async res => { if(!res.ok) throw new Error(); fetchBandMembers(selectedBand.id); });
+
+    toast.promise(req, {
+      loading: 'Removendo membro...',
+      success: 'Membro removido!',
+      error: 'Erro ao remover'
+    });
   };
 
   const colors = ['rgba(86,155,103,0.15)', 'rgba(100,180,255,0.12)', 'rgba(255,180,80,0.12)', 'rgba(180,100,255,0.12)'];
@@ -172,11 +208,11 @@ export default function Bands() {
             </p>
 
             {isAdmin && (
-              <form onSubmit={addMemberToBand} style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem' }}>
+              <form onSubmit={addMemberToBand} style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
                 <select 
                   value={selectedUserToAdd} 
                   onChange={e => setSelectedUserToAdd(e.target.value)} 
-                  style={{ ...inputStyle, flex: 1 }}
+                  style={{ ...inputStyle, flex: 1, minWidth: '150px' }}
                   required
                 >
                   <option value="" style={{ background: '#06392D' }}>Selecionar membro...</option>
@@ -184,7 +220,18 @@ export default function Bands() {
                     <option key={u.id} value={u.id} style={{ background: '#06392D' }}>{u.name}</option>
                   ))}
                 </select>
-                <button type="submit" className="btn btn-primary" style={{ padding: '0 1rem' }}>
+                <select 
+                  value={selectedRoleToAdd} 
+                  onChange={e => setSelectedRoleToAdd(e.target.value)} 
+                  style={{ ...inputStyle, flex: 1, minWidth: '130px' }}
+                  required
+                >
+                  <option value="" style={{ background: '#06392D' }}>Função...</option>
+                  {allRoles.map(r => (
+                    <option key={r.id} value={r.id} style={{ background: '#06392D' }}>{r.name}</option>
+                  ))}
+                </select>
+                <button type="submit" className="btn btn-primary" style={{ padding: '0 1rem', flex: '0 0 auto' }}>
                   <UserPlus size={16} /> Adicionar
                 </button>
               </form>
@@ -201,11 +248,14 @@ export default function Bands() {
                       padding: '1rem', borderBottom: '1px solid rgba(255,255,255,0.05)' 
                     }}>
                       <div>
-                        <p style={{ fontWeight: '500', fontSize: '0.95rem' }}>{mb.user.name}</p>
+                        <p style={{ fontWeight: '500', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          {mb.user.name}
+                          {mb.role && <span style={{ fontSize: '0.7rem', background: 'rgba(255,255,255,0.1)', padding: '0.1rem 0.4rem', borderRadius: '4px' }}>{mb.role.name}</span>}
+                        </p>
                         <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)' }}>{mb.user.email}</p>
                       </div>
                       {isAdmin && (
-                        <button onClick={() => removeMemberFromBand(mb.userId)} style={{
+                        <button onClick={() => removeMemberFromBand(mb.id)} style={{
                           background: 'rgba(224,92,92,0.1)', border: 'none', color: '#ffaaaa',
                           cursor: 'pointer', padding: '0.4rem', borderRadius: '6px', transition: 'all 0.15s'
                         }}>
