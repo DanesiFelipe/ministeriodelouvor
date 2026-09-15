@@ -209,8 +209,8 @@ export default function Dashboard() {
           ) : (
             <>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.35rem' }}>
-                <Clock size={16} style={{ color: 'var(--color-warning)', flexShrink: 0 }} />
-                <p style={{ fontSize: '1.1rem', fontWeight: '600', color: 'var(--color-warning)' }}>Pendente</p>
+                <Clock size={16} style={{ color: 'var(--color-danger)', flexShrink: 0 }} />
+                <p style={{ fontSize: '1.1rem', fontWeight: '600', color: 'var(--color-danger)' }}>Pendente</p>
               </div>
               <p style={{ fontSize: '0.83rem', color: 'rgba(255,255,255,0.35)' }}>O Ministro ainda não adicionou as músicas.</p>
             </>
@@ -297,7 +297,7 @@ export default function Dashboard() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.15rem' }}>
                       <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.32)' }}>{service.time}</span>
                       <span style={{ color: 'rgba(255,255,255,0.15)', fontSize: '0.7rem' }}>·</span>
-                      <span style={{ fontSize: '0.75rem', color: hasRep ? 'var(--color-info)' : 'var(--color-warning)', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                      <span style={{ fontSize: '0.75rem', color: hasRep ? 'var(--color-info)' : 'var(--color-danger)', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                         {hasRep ? <CheckCircle2 size={10} /> : <Clock size={10} />}
                         {hasRep ? 'Repertório pronto' : 'Pendente'}
                       </span>
