@@ -1,6 +1,7 @@
 import { API_URL } from '../config';
 import { useEffect, useState } from 'react';
 import { Trash2, Edit2, Plus, Music, ExternalLink, Search } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 interface Song {
   id: string;
@@ -64,19 +65,24 @@ export default function Songs() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      const token = localStorage.getItem('token');
-      const url = editingId ? `${API_URL}/api/songs/${editingId}` : `${API_URL}/api/songs`;
-      const res = await fetch(url, {
-        method: editingId ? 'PUT' : 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ title, artist, key, links })
-      });
+    const token = localStorage.getItem('token');
+    const url = editingId ? `${API_URL}/api/songs/${editingId}` : `${API_URL}/api/songs`;
+    const req = fetch(url, {
+      method: editingId ? 'PUT' : 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ title, artist, key, links })
+    }).then(async res => {
       if (!res.ok) throw new Error();
       setShowModal(false);
       setTitle(''); setArtist(''); setKey(''); setLinks(''); setEditingId(null);
       fetchSongs();
-    } catch { alert('Erro ao salvar música'); }
+    });
+
+    toast.promise(req, {
+      loading: 'Salvando música...',
+      success: 'Música salva com sucesso!',
+      error: 'Erro ao salvar música'
+    });
   };
 
   const editSong = (song: Song) => {
@@ -90,15 +96,20 @@ export default function Songs() {
 
   const deleteSong = async (id: string) => {
     if (!window.confirm('Deseja excluir esta música do acervo?')) return;
-    try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}/api/songs/${id}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` }
-      });
+    const token = localStorage.getItem('token');
+    const req = fetch(`${API_URL}/api/songs/${id}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` }
+    }).then(async res => {
       if (!res.ok) throw new Error();
       fetchSongs();
-    } catch { alert('Erro ao excluir (você pode não ter permissão)'); }
+    });
+
+    toast.promise(req, {
+      loading: 'Excluindo música...',
+      success: 'Música excluída!',
+      error: 'Erro ao excluir'
+    });
   };
 
   const filtered = songs.filter(s =>

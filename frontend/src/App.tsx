@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -15,8 +16,16 @@ import WhatsAppSettings from './pages/WhatsAppSettings';
 
 function App() {
   return (
-    <Router>
-      <Routes>
+    <>
+      <Toaster position="top-right" toastOptions={{
+        style: {
+          background: '#06392D',
+          color: '#fff',
+          border: '1px solid rgba(255,255,255,0.1)',
+        }
+      }} />
+      <Router>
+        <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
@@ -33,7 +42,8 @@ function App() {
           <Route path="whatsapp" element={<WhatsAppSettings />} />
         </Route>
       </Routes>
-    </Router>
+      </Router>
+    </>
   );
 }
 
