@@ -136,11 +136,11 @@ export default function Bands() {
     });
   };
 
-  const removeMemberFromBand = async (userId: string) => {
+  const removeMemberFromBand = async (memberBandId: string) => {
     if (!selectedBand) return;
     if (!window.confirm('Remover membro desta banda?')) return;
     const token = localStorage.getItem('token');
-    const req = fetch(`${API_URL}/api/bands/${selectedBand.id}/members/${userId}`, { 
+    const req = fetch(`${API_URL}/api/bands/${selectedBand.id}/members/${memberBandId}`, { 
       method: 'DELETE', 
       headers: { Authorization: `Bearer ${token}` } 
     }).then(async res => { if(!res.ok) throw new Error(); fetchBandMembers(selectedBand.id); });
@@ -255,7 +255,7 @@ export default function Bands() {
                         <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)' }}>{mb.user.email}</p>
                       </div>
                       {isAdmin && (
-                        <button onClick={() => removeMemberFromBand(mb.userId)} style={{
+                        <button onClick={() => removeMemberFromBand(mb.id)} style={{
                           background: 'rgba(224,92,92,0.1)', border: 'none', color: '#ffaaaa',
                           cursor: 'pointer', padding: '0.4rem', borderRadius: '6px', transition: 'all 0.15s'
                         }}>

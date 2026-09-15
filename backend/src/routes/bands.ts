@@ -92,15 +92,12 @@ router.post('/:id/members', requireAuth, requireAdmin, async (req: AuthRequest, 
   }
 });
 
-router.delete('/:id/members/:userId', requireAuth, requireAdmin, async (req: AuthRequest, res: Response) => {
+router.delete('/:id/members/:memberBandId', requireAuth, requireAdmin, async (req: AuthRequest, res: Response) => {
   try {
-    const bandId = req.params.id as string;
-    const userId = req.params.userId as string;
+    const memberBandId = req.params.memberBandId as string;
     
     await prisma.memberBand.delete({
-      where: {
-        userId_bandId: { userId, bandId }
-      }
+      where: { id: memberBandId }
     });
     res.json({ message: 'Membro removido da banda' });
   } catch (error) {
