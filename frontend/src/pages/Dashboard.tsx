@@ -181,16 +181,20 @@ export default function Dashboard() {
         <div
           onClick={() => nextService && navigate(`/admin/services/${nextService.id}`)}
           style={{
-            ...surfaceCard,
+            background: hasRepertoire ? 'rgba(90,173,238,0.06)' : 'rgba(217,96,96,0.07)',
+            border: `1px solid ${hasRepertoire ? 'rgba(90,173,238,0.2)' : 'rgba(217,96,96,0.2)'}`,
+            borderLeft: `3px solid ${hasRepertoire ? 'var(--color-info)' : 'var(--color-danger)'}`,
+            borderRadius: '10px',
+            padding: '1.5rem',
             cursor: nextService ? 'pointer' : 'default',
             transition: 'background 140ms ease',
           }}
-          onMouseEnter={e => { if (nextService) (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.055)'; }}
-          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.03)'; }}
+          onMouseEnter={e => { if (nextService) (e.currentTarget as HTMLElement).style.background = hasRepertoire ? 'rgba(90,173,238,0.10)' : 'rgba(217,96,96,0.11)'; }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = hasRepertoire ? 'rgba(90,173,238,0.06)' : 'rgba(217,96,96,0.07)'; }}
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <Music size={15} style={{ color: hasRepertoire ? 'var(--color-info)' : 'var(--color-warning)' }} />
+              <Music size={15} style={{ color: hasRepertoire ? 'var(--color-info)' : 'var(--color-danger)' }} />
               <p style={{ fontSize: '0.72rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.35)' }}>Repertório</p>
             </div>
             {nextService && <ChevronRight size={14} style={{ color: 'rgba(255,255,255,0.2)' }} />}
