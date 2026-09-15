@@ -1,7 +1,7 @@
 import { API_URL } from '../config';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, Music, Bell, ChevronRight, Users, CheckCircle2, Clock, AlertCircle } from 'lucide-react';
+import { Calendar, Music, Bell, ChevronRight, Users, CheckCircle2, Clock } from 'lucide-react';
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -31,11 +31,11 @@ export default function Dashboard() {
       const services = await servicesRes.json();
       const noticesData = await noticesRes.json();
       const mySchedulesData = await mySchedulesRes.json();
-      
+
       setAllServices(services);
-      setNotices(noticesData.slice(0, 3)); // Pega os 3 mais recentes
+      setNotices(noticesData.slice(0, 3));
       setMySchedules(mySchedulesData || []);
-      
+
       const now = new Date();
       now.setHours(0, 0, 0, 0);
       const upcoming = services.find((s: any) => new Date(s.date) >= now);
@@ -65,48 +65,38 @@ export default function Dashboard() {
     return 'Boa noite';
   };
 
+  const surfaceCard: React.CSSProperties = {
+    background: 'rgba(255,255,255,0.03)',
+    border: '1px solid rgba(255,255,255,0.07)',
+    borderRadius: '12px',
+    padding: '1.5rem',
+  };
+
   return (
     <div style={{ paddingBottom: '3rem' }}>
-      {/* Hero Header */}
-      <div style={{
-        background: 'linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%)',
-        border: '1px solid rgba(255,255,255,0.08)',
-        borderRadius: '20px',
-        padding: '2.5rem',
-        marginBottom: '2rem',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        flexWrap: 'wrap',
-        gap: '1rem',
-        position: 'relative',
-        overflow: 'hidden',
-      }}>
-        <div style={{ position: 'absolute', top: '-60px', right: '-60px', width: '200px', height: '200px', background: 'radial-gradient(circle, rgba(167,207,168,0.12) 0%, transparent 70%)', borderRadius: '50%', pointerEvents: 'none' }} />
-        <div>
-          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.85rem', marginBottom: '0.3rem', textTransform: 'uppercase', letterSpacing: '0.12em' }}>
-            {getGreeting()},
-          </p>
-          <h1 style={{ fontSize: '2.4rem', fontWeight: '700', lineHeight: 1.1 }}>
-            {user?.name || 'bem-vindo'} 👋
-          </h1>
-          <p style={{ color: 'rgba(255,255,255,0.35)', marginTop: '0.5rem', fontSize: '0.9rem' }}>
-            {new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-          </p>
-        </div>
-        <div style={{ background: 'rgba(255,255,255,0.06)', borderRadius: '14px', padding: '1rem 1.8rem', textAlign: 'center', border: '1px solid rgba(255,255,255,0.08)' }}>
-          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.7rem', marginBottom: '0.3rem', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Cultos agendados</p>
-          <p style={{ fontSize: '2.8rem', fontWeight: '700', lineHeight: 1 }}>{loading ? '—' : allServices.length}</p>
-        </div>
+
+      {/* Greeting */}
+      <div style={{ marginBottom: '2.5rem' }}>
+        <p style={{ fontSize: '0.78rem', fontWeight: '500', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.3)', marginBottom: '0.4rem' }}>
+          {getGreeting()}
+        </p>
+        <h1 style={{ fontSize: '1.75rem', fontWeight: '600', letterSpacing: '-0.01em', lineHeight: 1.2 }}>
+          {user?.name || 'Bem-vindo'}
+        </h1>
+        <p style={{ color: 'rgba(255,255,255,0.3)', marginTop: '0.3rem', fontSize: '0.875rem' }}>
+          {new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}
+          <span style={{ marginLeft: '0.75rem', color: 'rgba(255,255,255,0.18)' }}>·</span>
+          <span style={{ marginLeft: '0.75rem' }}>{loading ? '—' : allServices.length} cultos agendados</span>
+        </p>
       </div>
 
-      {/* My Schedules Widget */}
+      {/* My Schedules */}
       {!loading && mySchedules.length > 0 && (
-        <div style={{ marginBottom: '2rem' }}>
-          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '1rem' }}>
+        <div style={{ marginBottom: '2.5rem' }}>
+          <p style={{ fontSize: '0.72rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.28)', marginBottom: '1rem' }}>
             Minhas Escalas
           </p>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             {mySchedules.map((schedule: any) => {
               const d = new Date(schedule.service.date);
               const dayStr = d.toLocaleDateString('pt-BR', { weekday: 'long' });
@@ -114,31 +104,34 @@ export default function Dashboard() {
               const myRoles = schedule.participants.map((p: any) => p.role.name).join(', ');
 
               return (
-                <div key={schedule.id} onClick={() => navigate(`/admin/services/${schedule.service.id}`)}
+                <div
+                  key={schedule.id}
+                  onClick={() => navigate(`/admin/services/${schedule.service.id}`)}
                   style={{
-                    background: 'linear-gradient(135deg, rgba(86,155,103,0.15) 0%, rgba(255,255,255,0.03) 100%)',
-                    border: '1px solid rgba(86,155,103,0.3)',
-                    borderRadius: '16px', padding: '1.25rem', cursor: 'pointer',
-                    transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '1rem'
+                    ...surfaceCard,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '1rem',
+                    cursor: 'pointer',
+                    transition: 'background 140ms ease',
+                    padding: '1rem 1.25rem',
                   }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(-3px)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 8px 24px rgba(86,155,103,0.15)'; }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'; (e.currentTarget as HTMLElement).style.boxShadow = 'none'; }}
+                  onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.055)'}
+                  onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.03)'}
                 >
-                  <div style={{
-                    background: 'rgba(86,155,103,0.2)', color: '#a7cfa8',
-                    padding: '0.5rem', borderRadius: '12px', textAlign: 'center', minWidth: '60px'
-                  }}>
-                    <p style={{ fontSize: '1.3rem', fontWeight: '700', lineHeight: 1 }}>{dateStr.split('/')[0]}</p>
-                    <p style={{ fontSize: '0.65rem', textTransform: 'uppercase', marginTop: '0.2rem' }}>{d.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '')}</p>
+                  {/* Date block */}
+                  <div style={{ textAlign: 'center', minWidth: '42px', flexShrink: 0 }}>
+                    <p style={{ fontSize: '1.1rem', fontWeight: '700', lineHeight: 1, color: 'var(--color-accent-hi)' }}>{dateStr.split('/')[0]}</p>
+                    <p style={{ fontSize: '0.65rem', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)', marginTop: '0.15rem' }}>{d.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '')}</p>
                   </div>
+                  <div style={{ width: '1px', height: '32px', background: 'rgba(255,255,255,0.08)', flexShrink: 0 }} />
                   <div style={{ flex: 1 }}>
-                    <p style={{ fontSize: '0.95rem', fontWeight: '600', textTransform: 'capitalize' }}>{dayStr}</p>
-                    <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', marginTop: '0.2rem' }}>{schedule.service.type} · {schedule.service.time}</p>
-                    <div style={{ marginTop: '0.5rem', display: 'inline-flex', background: 'rgba(255,255,255,0.1)', padding: '0.2rem 0.6rem', borderRadius: '20px', fontSize: '0.7rem', color: '#fff', alignItems: 'center', gap: '0.3rem' }}>
-                      <Users size={10} /> {myRoles}
-                    </div>
+                    <p style={{ fontSize: '0.9rem', fontWeight: '500', textTransform: 'capitalize', marginBottom: '0.15rem' }}>{dayStr}</p>
+                    <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.38)' }}>
+                      {schedule.service.type} · {schedule.service.time} · <span style={{ color: 'rgba(255,255,255,0.55)' }}>{myRoles}</span>
+                    </p>
                   </div>
-                  <ChevronRight size={16} style={{ opacity: 0.3 }} />
+                  <ChevronRight size={15} style={{ color: 'rgba(255,255,255,0.2)', flexShrink: 0 }} />
                 </div>
               );
             })}
@@ -147,147 +140,124 @@ export default function Dashboard() {
       )}
 
       {/* Status Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(270px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1rem', marginBottom: '2.5rem' }}>
 
         {/* Próxima Escala */}
         <div
           onClick={() => nextService && navigate(`/admin/services/${nextService.id}`)}
-          onMouseEnter={e => { if (nextService) { (e.currentTarget as HTMLElement).style.transform = 'translateY(-5px)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 16px 48px rgba(167,207,168,0.15)'; }}}
-          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'; (e.currentTarget as HTMLElement).style.boxShadow = 'none'; }}
           style={{
-            background: 'linear-gradient(135deg, rgba(167,207,168,0.12) 0%, rgba(255,255,255,0.03) 100%)',
-            border: '1px solid rgba(167,207,168,0.25)',
-            borderRadius: '18px',
-            padding: '1.8rem',
+            ...surfaceCard,
             cursor: nextService ? 'pointer' : 'default',
-            transition: 'transform 0.25s, box-shadow 0.25s',
-            position: 'relative',
-            overflow: 'hidden',
-          }}>
-          <div style={{ position: 'absolute', bottom: '-30px', right: '-30px', opacity: 0.06 }}><Calendar size={110} /></div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.2rem' }}>
-            <div style={{ background: 'rgba(167,207,168,0.2)', borderRadius: '12px', padding: '0.7rem', display: 'inline-flex' }}>
-              <Calendar size={22} color="#a7cfa8" />
+            transition: 'background 140ms ease',
+          }}
+          onMouseEnter={e => { if (nextService) (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.055)'; }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.03)'; }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Calendar size={15} style={{ color: 'var(--color-accent-hi)' }} />
+              <p style={{ fontSize: '0.72rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.35)' }}>Próxima Escala</p>
             </div>
-            {nextService && <ChevronRight size={16} style={{ opacity: 0.35, marginTop: '0.3rem' }} />}
+            {nextService && <ChevronRight size={14} style={{ color: 'rgba(255,255,255,0.2)' }} />}
           </div>
-          <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '0.6rem' }}>Próxima Escala</p>
-          {loading ? <p style={{ color: 'rgba(255,255,255,0.3)' }}>Carregando...</p>
-            : nextService ? (
-              <>
-                <p style={{ fontSize: '1.9rem', fontWeight: '700', lineHeight: 1.1, textTransform: 'capitalize' }}>{dayName}</p>
-                <p style={{ fontSize: '1rem', color: '#a7cfa8', fontWeight: '600', marginTop: '0.3rem' }}>{dayNum} · {nextService.time}</p>
-                <div style={{ marginTop: '1rem', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                  <Users size={16} style={{ color: '#a7cfa8' }} />
-                  <p style={{ fontSize: '1.15rem', fontWeight: '600', color: 'white' }}>
-                    {hasSchedule ? (nextService.schedules[0].band?.name || 'Avulso') : 'Sem escala definida'}
-                  </p>
-                </div>
-              </>
-            ) : <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '1rem' }}>Nenhum culto agendado.</p>
-          }
+
+          {loading ? (
+            <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.875rem' }}>Carregando...</p>
+          ) : nextService ? (
+            <>
+              <p style={{ fontSize: '1.5rem', fontWeight: '600', textTransform: 'capitalize', letterSpacing: '-0.01em', lineHeight: 1.2 }}>{dayName}</p>
+              <p style={{ fontSize: '0.875rem', color: 'var(--color-accent-hi)', marginTop: '0.25rem' }}>{dayNum} · {nextService.time}</p>
+              <p style={{ fontSize: '0.83rem', color: 'rgba(255,255,255,0.4)', marginTop: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <Users size={13} />
+                {hasSchedule ? (nextService.schedules[0].band?.name || 'Avulso') : 'Sem escala definida'}
+              </p>
+            </>
+          ) : (
+            <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.9rem' }}>Nenhum culto agendado.</p>
+          )}
         </div>
 
         {/* Repertório */}
         <div
           onClick={() => nextService && navigate(`/admin/services/${nextService.id}`)}
-          onMouseEnter={e => { if (nextService) (e.currentTarget as HTMLElement).style.transform = 'translateY(-5px)'; }}
-          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'; }}
           style={{
-            background: hasRepertoire
-              ? 'linear-gradient(135deg, rgba(100,180,255,0.12) 0%, rgba(255,255,255,0.03) 100%)'
-              : 'linear-gradient(135deg, rgba(255,180,80,0.1) 0%, rgba(255,255,255,0.03) 100%)',
-            border: hasRepertoire ? '1px solid rgba(100,180,255,0.25)' : '1px solid rgba(255,180,80,0.25)',
-            borderRadius: '18px',
-            padding: '1.8rem',
+            ...surfaceCard,
             cursor: nextService ? 'pointer' : 'default',
-            transition: 'transform 0.25s',
-            position: 'relative',
-            overflow: 'hidden',
-          }}>
-          <div style={{ position: 'absolute', bottom: '-30px', right: '-30px', opacity: 0.06 }}><Music size={110} /></div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.2rem' }}>
-            <div style={{ background: hasRepertoire ? 'rgba(100,180,255,0.2)' : 'rgba(255,180,80,0.2)', borderRadius: '12px', padding: '0.7rem', display: 'inline-flex' }}>
-              <Music size={22} color={hasRepertoire ? '#64b4ff' : '#ffb450'} />
+            transition: 'background 140ms ease',
+          }}
+          onMouseEnter={e => { if (nextService) (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.055)'; }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.03)'; }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Music size={15} style={{ color: hasRepertoire ? 'var(--color-info)' : 'var(--color-warning)' }} />
+              <p style={{ fontSize: '0.72rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.35)' }}>Repertório</p>
             </div>
-            {nextService && <ChevronRight size={16} style={{ opacity: 0.35, marginTop: '0.3rem' }} />}
+            {nextService && <ChevronRight size={14} style={{ color: 'rgba(255,255,255,0.2)' }} />}
           </div>
-          <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '0.6rem' }}>Repertório Atual</p>
-          {loading ? <p style={{ color: 'rgba(255,255,255,0.3)' }}>Carregando...</p>
-            : hasRepertoire ? (
-              <>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                  <CheckCircle2 size={22} color="#64b4ff" />
-                  <p style={{ fontSize: '1.9rem', fontWeight: '700', color: '#64b4ff' }}>Enviado</p>
-                </div>
-                <p style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.4)', marginTop: '0.8rem' }}>Músicas prontas para o próximo culto.</p>
-              </>
-            ) : (
-              <>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                  <Clock size={22} color="#ffb450" />
-                  <p style={{ fontSize: '1.9rem', fontWeight: '700', color: '#ffb450' }}>Pendente</p>
-                </div>
-                <p style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.4)', marginTop: '0.8rem' }}>O Ministro ainda não adicionou as músicas.</p>
-              </>
-            )
-          }
+
+          {loading ? (
+            <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.875rem' }}>Carregando...</p>
+          ) : hasRepertoire ? (
+            <>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.35rem' }}>
+                <CheckCircle2 size={16} style={{ color: 'var(--color-info)', flexShrink: 0 }} />
+                <p style={{ fontSize: '1.1rem', fontWeight: '600', color: 'var(--color-info)' }}>Enviado</p>
+              </div>
+              <p style={{ fontSize: '0.83rem', color: 'rgba(255,255,255,0.35)' }}>Músicas prontas para o próximo culto.</p>
+            </>
+          ) : (
+            <>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.35rem' }}>
+                <Clock size={16} style={{ color: 'var(--color-warning)', flexShrink: 0 }} />
+                <p style={{ fontSize: '1.1rem', fontWeight: '600', color: 'var(--color-warning)' }}>Pendente</p>
+              </div>
+              <p style={{ fontSize: '0.83rem', color: 'rgba(255,255,255,0.35)' }}>O Ministro ainda não adicionou as músicas.</p>
+            </>
+          )}
         </div>
 
         {/* Avisos */}
-        <div 
+        <div
           onClick={() => navigate('/admin/notices')}
-          style={{
-            background: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)',
-            border: '1px solid rgba(255,255,255,0.07)',
-            borderRadius: '18px',
-            padding: '1.8rem',
-            position: 'relative',
-            overflow: 'hidden',
-            cursor: 'pointer'
-          }}
+          style={{ ...surfaceCard, cursor: 'pointer', transition: 'background 140ms ease' }}
+          onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.055)'}
+          onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.03)'}
         >
-          <div style={{ position: 'absolute', bottom: '-30px', right: '-30px', opacity: 0.05 }}><Bell size={110} /></div>
-          <div style={{ marginBottom: '1.2rem', display: 'flex', justifyContent: 'space-between' }}>
-            <div style={{ background: 'rgba(255,255,255,0.07)', borderRadius: '12px', padding: '0.7rem', display: 'inline-flex' }}>
-              <Bell size={22} color="rgba(255,255,255,0.4)" />
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Bell size={15} style={{ color: 'rgba(255,255,255,0.4)' }} />
+              <p style={{ fontSize: '0.72rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.35)' }}>Mural de Avisos</p>
             </div>
-            <ChevronRight size={16} style={{ opacity: 0.35, marginTop: '0.3rem' }} />
+            <ChevronRight size={14} style={{ color: 'rgba(255,255,255,0.2)' }} />
           </div>
-          <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '0.6rem' }}>Mural de Avisos</p>
-          
+
           {loading ? (
-            <p style={{ color: 'rgba(255,255,255,0.3)' }}>Carregando...</p>
+            <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.875rem' }}>Carregando...</p>
           ) : notices.length > 0 ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               {notices.map(notice => (
-                <div key={notice.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '0.5rem' }}>
-                  <p style={{ fontSize: '0.95rem', fontWeight: '600', color: 'rgba(255,255,255,0.9)' }}>{notice.title}</p>
-                  <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)' }}>
-                    Por {notice.createdBy.name} · {new Date(notice.createdAt).toLocaleDateString('pt-BR')}
+                <div key={notice.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '0.6rem' }}>
+                  <p style={{ fontSize: '0.875rem', fontWeight: '500', color: 'rgba(255,255,255,0.85)' }}>{notice.title}</p>
+                  <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.32)', marginTop: '0.15rem' }}>
+                    {notice.createdBy.name} · {new Date(notice.createdAt).toLocaleDateString('pt-BR')}
                   </p>
                 </div>
               ))}
             </div>
           ) : (
-            <>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                <AlertCircle size={20} style={{ opacity: 0.35 }} />
-                <p style={{ fontSize: '1.4rem', fontWeight: '600', opacity: 0.5 }}>Nenhum aviso</p>
-              </div>
-              <p style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.3)', marginTop: '0.8rem' }}>Sem comunicados recentes.</p>
-            </>
+            <p style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.28)' }}>Sem comunicados recentes.</p>
           )}
         </div>
       </div>
 
-      {/* Upcoming Timeline */}
+      {/* Upcoming timeline */}
       {!loading && upcomingServices.length > 0 && (
-        <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '18px', padding: '1.8rem' }}>
-          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '1.5rem' }}>
+        <div>
+          <p style={{ fontSize: '0.72rem', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.28)', marginBottom: '1rem' }}>
             Próximos Cultos
           </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.7rem' }}>
+          <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px', overflow: 'hidden' }}>
             {upcomingServices.map((service: any, index: number) => {
               const d = new Date(service.date);
               const isNext = index === 0;
@@ -296,43 +266,45 @@ export default function Dashboard() {
                 <div
                   key={service.id}
                   onClick={() => navigate(`/admin/services/${service.id}`)}
-                  onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = isNext ? 'rgba(167,207,168,0.12)' : 'rgba(255,255,255,0.05)'}
-                  onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = isNext ? 'rgba(167,207,168,0.06)' : 'rgba(255,255,255,0.02)'}
                   style={{
-                    display: 'flex', alignItems: 'center', gap: '1.2rem',
-                    padding: '1rem 1.2rem',
-                    background: isNext ? 'rgba(167,207,168,0.06)' : 'rgba(255,255,255,0.02)',
-                    border: isNext ? '1px solid rgba(167,207,168,0.2)' : '1px solid rgba(255,255,255,0.05)',
-                    borderRadius: '12px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '1rem',
+                    padding: '0.9rem 1.25rem',
+                    borderBottom: index < upcomingServices.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none',
                     cursor: 'pointer',
-                    transition: 'all 0.2s',
+                    transition: 'background 140ms ease',
+                    background: isNext ? 'rgba(78,148,96,0.06)' : 'transparent',
                   }}
+                  onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = isNext ? 'rgba(78,148,96,0.1)' : 'rgba(255,255,255,0.03)'}
+                  onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = isNext ? 'rgba(78,148,96,0.06)' : 'transparent'}
                 >
-                  <div style={{
-                    background: isNext ? 'rgba(167,207,168,0.2)' : 'rgba(255,255,255,0.08)',
-                    color: isNext ? '#a7cfa8' : 'rgba(255,255,255,0.7)',
-                    padding: '0.5rem',
-                    borderRadius: '8px',
-                    textAlign: 'center',
-                    minWidth: '55px'
-                  }}>
-                    <p style={{ fontSize: '1.2rem', fontWeight: '700', lineHeight: 1 }}>{d.toLocaleDateString('pt-BR', { day: '2-digit' })}</p>
-                    <p style={{ fontSize: '0.65rem', textTransform: 'uppercase', marginTop: '0.2rem' }}>{d.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '')}</p>
+                  {/* Date */}
+                  <div style={{ textAlign: 'center', minWidth: '36px', flexShrink: 0 }}>
+                    <p style={{ fontSize: '1rem', fontWeight: '700', lineHeight: 1, color: isNext ? 'var(--color-accent-hi)' : 'rgba(255,255,255,0.7)' }}>
+                      {d.toLocaleDateString('pt-BR', { day: '2-digit' })}
+                    </p>
+                    <p style={{ fontSize: '0.62rem', textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', marginTop: '0.1rem' }}>
+                      {d.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '')}
+                    </p>
                   </div>
+
+                  {/* Info */}
                   <div style={{ flex: 1 }}>
-                    <p style={{ fontSize: '0.95rem', fontWeight: '600', color: isNext ? 'white' : 'rgba(255,255,255,0.8)' }}>
+                    <p style={{ fontSize: '0.9rem', fontWeight: isNext ? '500' : '400', color: isNext ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.65)', textTransform: 'capitalize' }}>
                       {d.toLocaleDateString('pt-BR', { weekday: 'long' }).replace('-feira', '')}
                     </p>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.3rem' }}>
-                      <span style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)' }}>{service.time}</span>
-                      <span style={{ color: 'rgba(255,255,255,0.2)' }}>•</span>
-                      <span style={{ fontSize: '0.75rem', color: hasRep ? '#64b4ff' : '#ffb450', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.15rem' }}>
+                      <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.32)' }}>{service.time}</span>
+                      <span style={{ color: 'rgba(255,255,255,0.15)', fontSize: '0.7rem' }}>·</span>
+                      <span style={{ fontSize: '0.75rem', color: hasRep ? 'var(--color-info)' : 'var(--color-warning)', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                         {hasRep ? <CheckCircle2 size={10} /> : <Clock size={10} />}
                         {hasRep ? 'Repertório pronto' : 'Pendente'}
                       </span>
                     </div>
                   </div>
-                  <ChevronRight size={16} style={{ opacity: 0.3 }} />
+
+                  <ChevronRight size={14} style={{ color: 'rgba(255,255,255,0.18)', flexShrink: 0 }} />
                 </div>
               );
             })}

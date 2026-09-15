@@ -11,29 +11,29 @@ interface Song {
   links: string | null;
 }
 
-const inputStyle = {
-  padding: '0.8rem 1rem',
-  borderRadius: '8px',
-  background: 'rgba(255,255,255,0.07)',
-  color: 'white',
-  border: '1px solid rgba(255,255,255,0.15)',
+const inputStyle: React.CSSProperties = {
+  padding: '0.65rem 0.9rem',
+  borderRadius: '6px',
+  background: 'rgba(255,255,255,0.05)',
+  color: 'rgba(255,255,255,0.9)',
+  border: '1px solid rgba(255,255,255,0.1)',
   fontFamily: 'var(--font-body)',
   fontSize: '0.9rem',
   outline: 'none',
   width: '100%',
+  transition: 'border-color 140ms ease',
 };
 
 const KEYS = ['C', 'C#', 'Db', 'D', 'D#', 'Eb', 'E', 'F', 'F#', 'Gb', 'G', 'G#', 'Ab', 'A', 'A#', 'Bb', 'B',
   'Cm', 'C#m', 'Dm', 'D#m', 'Ebm', 'Em', 'Fm', 'F#m', 'Gm', 'G#m', 'Am', 'A#m', 'Bbm', 'Bm'];
 
-const KEY_COLORS: Record<string, string> = {
-  'C': '#e57373', 'D': '#f06292', 'E': '#ba68c8', 'F': '#7986cb',
-  'G': '#4dd0e1', 'A': '#4db6ac', 'B': '#81c784',
+/* Key → hue map for subtle color coding */
+const KEY_HUES: Record<string, number> = {
+  C: 0, D: 30, E: 280, F: 240, G: 190, A: 160, B: 120
 };
-function getKeyColor(k: string | null) {
-  if (!k) return 'rgba(255,255,255,0.15)';
-  const base = k.replace(/[#bm]/g, '');
-  return KEY_COLORS[base] || '#a7cfa8';
+function getKeyHue(k: string | null): number {
+  if (!k) return 0;
+  return KEY_HUES[k.replace(/[#bm]/g, '')] ?? 0;
 }
 
 export default function Songs() {
@@ -117,6 +117,14 @@ export default function Songs() {
     (s.artist || '').toLowerCase().includes(search.toLowerCase())
   );
 
+  const labelStyle: React.CSSProperties = {
+    display: 'block',
+    marginBottom: '0.35rem',
+    fontSize: '0.78rem',
+    fontWeight: '500',
+    color: 'rgba(255,255,255,0.4)',
+  };
+
   return (
     <>
       <div className="page-header">
@@ -125,57 +133,58 @@ export default function Songs() {
           <p className="page-subtitle">{songs.length} músicas no acervo do Ministério</p>
         </div>
         {canEdit && (
-          <button onClick={() => { setShowModal(true); setEditingId(null); setTitle(''); setArtist(''); setKey(''); setLinks(''); }}
-            className="btn btn-primary">
-            <Plus size={18} /> Nova Música
+          <button
+            onClick={() => { setShowModal(true); setEditingId(null); setTitle(''); setArtist(''); setKey(''); setLinks(''); }}
+            className="btn btn-primary"
+          >
+            <Plus size={16} /> Nova Música
           </button>
         )}
       </div>
 
       {/* Search */}
       <div style={{ position: 'relative', marginBottom: '1.5rem' }}>
-        <Search size={16} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.3)', pointerEvents: 'none' }} />
+        <Search
+          size={15}
+          style={{ position: 'absolute', left: '0.9rem', top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.25)', pointerEvents: 'none' }}
+        />
         <input
           placeholder="Buscar por título ou artista..."
           value={search}
           onChange={e => setSearch(e.target.value)}
-          style={{ ...inputStyle, paddingLeft: '2.8rem' }}
+          style={{ ...inputStyle, paddingLeft: '2.5rem' }}
         />
       </div>
 
       {/* Modal */}
       {showModal && (
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
-          <div className="modal-box" onClick={e => e.stopPropagation()} style={{ maxWidth: '440px' }}>
-            <h2 style={{ marginBottom: '0.3rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <Music size={22} color="var(--color-light)" />
-              {editingId ? 'Editar Música' : 'Adicionar Música'}
-            </h2>
-            <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.82rem', marginBottom: '1.5rem', fontFamily: 'var(--font-body)' }}>
-              Preencha os dados da música para o acervo.
-            </p>
+          <div className="modal-box" onClick={e => e.stopPropagation()} style={{ maxWidth: '420px' }}>
+            <h2 className="modal-title">{editingId ? 'Editar Música' : 'Adicionar Música'}</h2>
+            <p className="modal-subtitle">Preencha os dados da música para o acervo.</p>
+
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div>
-                <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)' }}>Título *</label>
+                <label style={labelStyle}>Título *</label>
                 <input placeholder="Ex: Grande é o Senhor" required value={title} onChange={e => setTitle(e.target.value)} style={inputStyle} />
               </div>
               <div>
-                <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)' }}>Artista / Banda</label>
+                <label style={labelStyle}>Artista / Banda</label>
                 <input placeholder="Ex: Hillsong United" value={artist} onChange={e => setArtist(e.target.value)} style={inputStyle} />
               </div>
               <div>
-                <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)' }}>Tom Original</label>
+                <label style={labelStyle}>Tom Original</label>
                 <select value={key} onChange={e => setKey(e.target.value)} style={inputStyle}>
-                  <option value="" style={{ background: '#06392D' }}>Selecione o tom...</option>
-                  {KEYS.map(k => <option key={k} value={k} style={{ background: '#06392D' }}>{k}</option>)}
+                  <option value="" style={{ background: '#0c3d2c' }}>Selecione o tom...</option>
+                  {KEYS.map(k => <option key={k} value={k} style={{ background: '#0c3d2c' }}>{k}</option>)}
                 </select>
               </div>
               <div>
-                <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)' }}>Link YouTube / Cifra</label>
+                <label style={labelStyle}>Link YouTube / Cifra</label>
                 <input placeholder="https://youtube.com/..." value={links} onChange={e => setLinks(e.target.value)} style={inputStyle} />
               </div>
               <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem' }}>
-                <button type="button" onClick={() => setShowModal(false)} className="btn btn-ghost" style={{ flex: 1 }}>Cancelar</button>
+                <button type="button" onClick={() => setShowModal(false)} className="btn btn-ghost" style={{ flex: 1, justifyContent: 'center' }}>Cancelar</button>
                 <button type="submit" className="btn btn-primary" style={{ flex: 1, justifyContent: 'center' }}>Salvar</button>
               </div>
             </form>
@@ -184,93 +193,118 @@ export default function Songs() {
       )}
 
       {loading ? (
-        <div className="loading-spinner"><Music size={20} /> Carregando biblioteca...</div>
+        <div className="loading-spinner"><Music size={18} /> Carregando biblioteca...</div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(270px, 1fr))', gap: '1rem' }}>
-          {filtered.map(song => {
-            const keyColor = getKeyColor(song.key);
-            return (
-              <div key={song.id} style={{
-                background: 'rgba(255,255,255,0.04)',
-                border: '1px solid rgba(255,255,255,0.08)',
-                borderTop: `3px solid ${keyColor}22`,
-                borderRadius: '16px',
-                padding: '1.25rem',
-                transition: 'all 0.2s ease',
-                position: 'relative',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '0.75rem',
-              }}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.07)'; (e.currentTarget as HTMLElement).style.borderTopColor = `${keyColor}55`; (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)'; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.04)'; (e.currentTarget as HTMLElement).style.borderTopColor = `${keyColor}22`; (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'; }}
-              >
-                {/* Actions */}
-                {canEdit && (
-                  <div style={{ position: 'absolute', top: '1rem', right: '1rem', display: 'flex', gap: '0.3rem' }}>
-                    <button onClick={() => editSong(song)} title="Editar"
-                      style={{ background: 'rgba(255,255,255,0.07)', border: 'none', color: 'rgba(255,255,255,0.5)', cursor: 'pointer', padding: '0.35rem', borderRadius: '6px', transition: 'all 0.15s', display: 'flex', alignItems: 'center' }}
-                      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = 'white'; (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.15)'; }}
-                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.5)'; (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.07)'; }}>
-                      <Edit2 size={13} />
-                    </button>
-                    <button onClick={() => deleteSong(song.id)} title="Excluir"
-                      style={{ background: 'rgba(224,92,92,0.1)', border: 'none', color: 'rgba(224,92,92,0.6)', cursor: 'pointer', padding: '0.35rem', borderRadius: '6px', transition: 'all 0.15s', display: 'flex', alignItems: 'center' }}
-                      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = '#e05c5c'; (e.currentTarget as HTMLElement).style.background = 'rgba(224,92,92,0.2)'; }}
-                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(224,92,92,0.6)'; (e.currentTarget as HTMLElement).style.background = 'rgba(224,92,92,0.1)'; }}>
-                      <Trash2 size={13} />
-                    </button>
-                  </div>
-                )}
+        <>
+          {/* Songs as a table-like list */}
+          <div style={{
+            background: 'rgba(255,255,255,0.02)',
+            border: '1px solid rgba(255,255,255,0.06)',
+            borderRadius: '12px',
+            overflow: 'hidden',
+          }}>
+            {filtered.map((song, index) => {
+              const hue = getKeyHue(song.key);
+              const keyColor = song.key
+                ? `hsl(${hue}, 55%, 65%)`
+                : 'rgba(255,255,255,0.3)';
 
-                {/* Icon */}
-                <div style={{
-                  width: '42px', height: '42px',
-                  background: `linear-gradient(135deg, ${keyColor}30, ${keyColor}10)`,
-                  border: `1px solid ${keyColor}35`,
-                  borderRadius: '11px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}>
-                  <Music size={20} color={keyColor} />
-                </div>
-
-                {/* Title & Artist */}
-                <div>
-                  <h3 style={{ fontSize: '1rem', fontWeight: '600', fontFamily: 'var(--font-heading)', lineHeight: 1.25, paddingRight: '4.5rem', marginBottom: '0.25rem' }}>
-                    {song.title}
-                  </h3>
-                  <p style={{ color: 'rgba(255,255,255,0.38)', fontSize: '0.81rem', fontFamily: 'var(--font-body)' }}>
-                    {song.artist || 'Artista desconhecido'}
-                  </p>
-                </div>
-
-                {/* Footer */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '0.75rem', marginTop: 'auto' }}>
+              return (
+                <div
+                  key={song.id}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '1rem',
+                    padding: '0.9rem 1.25rem',
+                    borderBottom: index < filtered.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none',
+                    transition: 'background 140ms ease',
+                  }}
+                  onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.03)'}
+                  onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}
+                >
+                  {/* Key badge */}
                   <span style={{
-                    background: `${keyColor}18`, border: `1px solid ${keyColor}30`,
-                    color: keyColor, borderRadius: '20px', padding: '0.2rem 0.65rem',
-                    fontSize: '0.75rem', fontWeight: '600', fontFamily: 'var(--font-body)',
+                    flexShrink: 0,
+                    width: '32px',
+                    textAlign: 'center',
+                    fontSize: '0.75rem',
+                    fontWeight: '600',
+                    color: keyColor,
+                    background: `hsla(${hue}, 55%, 65%, 0.12)`,
+                    borderRadius: '4px',
+                    padding: '0.2rem 0',
                   }}>
-                    Tom: {song.key || '?'}
+                    {song.key || '?'}
                   </span>
+
+                  {/* Info */}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ fontSize: '0.9rem', fontWeight: '500', color: 'rgba(255,255,255,0.88)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {song.title}
+                    </p>
+                    <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.32)', marginTop: '0.1rem' }}>
+                      {song.artist || 'Artista desconhecido'}
+                    </p>
+                  </div>
+
+                  {/* Link */}
                   {song.links && (
-                    <a href={song.links} target="_blank" rel="noreferrer"
-                      style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: 'var(--color-info)', fontSize: '0.78rem', fontFamily: 'var(--font-body)' }}
-                      onClick={e => e.stopPropagation()}>
-                      <ExternalLink size={12} /> YouTube
+                    <a
+                      href={song.links}
+                      target="_blank"
+                      rel="noreferrer"
+                      onClick={e => e.stopPropagation()}
+                      style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: 'var(--color-info)', fontSize: '0.78rem', flexShrink: 0 }}
+                    >
+                      <ExternalLink size={12} />
+                      <span className="hide-mobile">Ver</span>
                     </a>
                   )}
-                </div>
-              </div>
-            );
-          })}
 
-          {filtered.length === 0 && (
-            <div className="empty-state" style={{ gridColumn: '1 / -1' }}>
-              <Music size={48} />
-              <p>{search ? `Nenhuma música encontrada para "${search}"` : 'Nenhuma música cadastrada ainda.'}</p>
-            </div>
-          )}
-        </div>
+                  {/* Actions */}
+                  {canEdit && (
+                    <div style={{ display: 'flex', gap: '0.3rem', flexShrink: 0 }}>
+                      <button
+                        onClick={() => editSong(song)}
+                        title="Editar"
+                        style={{
+                          background: 'none', border: 'none', color: 'rgba(255,255,255,0.28)',
+                          cursor: 'pointer', padding: '0.35rem', borderRadius: '5px',
+                          display: 'flex', alignItems: 'center', transition: 'color 140ms ease, background 140ms ease',
+                        }}
+                        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.7)'; (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.07)'; }}
+                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.28)'; (e.currentTarget as HTMLElement).style.background = 'none'; }}
+                      >
+                        <Edit2 size={14} />
+                      </button>
+                      <button
+                        onClick={() => deleteSong(song.id)}
+                        title="Excluir"
+                        style={{
+                          background: 'none', border: 'none', color: 'rgba(217,96,96,0.45)',
+                          cursor: 'pointer', padding: '0.35rem', borderRadius: '5px',
+                          display: 'flex', alignItems: 'center', transition: 'color 140ms ease, background 140ms ease',
+                        }}
+                        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = 'var(--color-danger)'; (e.currentTarget as HTMLElement).style.background = 'rgba(217,96,96,0.08)'; }}
+                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(217,96,96,0.45)'; (e.currentTarget as HTMLElement).style.background = 'none'; }}
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+
+            {filtered.length === 0 && (
+              <div className="empty-state">
+                <Music size={40} />
+                <p>{search ? `Nenhuma música encontrada para "${search}"` : 'Nenhuma música cadastrada ainda.'}</p>
+              </div>
+            )}
+          </div>
+        </>
       )}
     </>
   );
