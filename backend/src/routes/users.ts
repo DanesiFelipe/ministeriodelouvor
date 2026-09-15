@@ -76,15 +76,7 @@ router.post('/', requireAuth, requireAdmin, async (req: AuthRequest, res: Respon
       await prisma.memberRole.createMany({ data: memberRolesData });
     }
 
-    // Vincular a uma banda fixa (MemberBand)
-    if (bandId) {
-      await prisma.memberBand.create({
-        data: {
-          userId: user.id,
-          bandId
-        }
-      });
-    }
+    // Vincular a uma banda fixa (MemberBand) desativado no cadastro pois agora exige roleId
 
     res.status(201).json(user);
   } catch (error) {
